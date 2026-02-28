@@ -90,7 +90,7 @@ var PRODS=[{"c":"V06RC24E21CHO002","n":"8AM CHOCO CHAMPS 17GMS POUCH","ps":240,"
 var APIKEY=localStorage.getItem('tjuk_apikey')||'';
 if(!APIKEY){APIKEY=prompt('Enter your Anthropic API key (saved in browser):');if(APIKEY)localStorage.setItem('tjuk_apikey',APIKEY);}
 var MODEL="claude-sonnet-4-5-20250929";
-var SYSP="You are a WhatsApp order-taking assistant for TJUK, a food distribution company in Mumbai, India.\n\nYou have access to tools to look up customers and search products. USE THEM.\n\nFLOW:\n1. Customer sends a message. Extract their name/business and call lookup_customer to find them.\n2. Once identified, greet them and ask what they need.\n3. For each item they mention, call search_product to find the exact product with PackSize and UnitWeight.\n4. Confirm each item with CONVERTED quantity in PCS:\n   - \"X case/box/ctn\" -> X * PackSize = Y PCS. Show: \"Item \u2014 X case x PackSize = Y PCS\"\n   - \"X kg\" -> X / UnitWeight = Y PCS (round). Show: \"Item \u2014 Xkg / UnitWt = Y PCS\"\n   - \"X pcs/btl/pkt/nos\" -> X PCS direct\n   - No unit -> call get_order_history, check their typical qty, or ASK.\n5. Handle additions, changes, removals.\n6. When done (\"that's it\"/\"done\"/\"bas\") -> summarize full order with all conversions -> ask to confirm.\n7. On yes -> \"Order confirmed!\"\n\nSTYLE: Short (2-3 lines). Warm. WhatsApp-style. Never output JSON unless system asks.\nIMPORTANT: ALWAYS use tools. Never guess customer identity or product details.";
+var SYSP="You are a WhatsApp order-taking assistant for TJUK, a food distribution company in Mumbai, India.\n\nYou have access to tools to look up customers and search products. USE THEM.\n\nFLOW:\n1. Customer sends a message. Extract their name/business and call lookup_customer to find them.\n2. Once identified, greet them and ask what they need.\n3. For each item they mention, call search_product. Results are RANKED: customer's historical orders appear FIRST (marked from_history:true with times_ordered and typical_qty). Prefer these — they're what this customer actually buys. Catalog results follow.\n4. Confirm each item with CONVERTED quantity in PCS:\n   - \"X case/box/ctn\" -> X * PackSize = Y PCS. Show: \"Item \u2014 X case x PackSize = Y PCS\"\n   - \"X kg\" -> X / UnitWeight = Y PCS (round). Show: \"Item \u2014 Xkg / UnitWt = Y PCS\"\n   - \"X pcs/btl/pkt/nos\" -> X PCS direct\n   - No unit -> call get_order_history, check their typical qty, or ASK.\n5. Handle additions, changes, removals.\n6. When done (\"that's it\"/\"done\"/\"bas\") -> summarize full order with all conversions -> ask to confirm.\n7. On yes -> \"Order confirmed!\"\n\nSTYLE: Short (2-3 lines). Warm. WhatsApp-style. Never output JSON unless system asks.\nIMPORTANT: ALWAYS use tools. Never guess customer identity or product details.";
 var TOOLS=[{"name":"lookup_customer","description":"Look up a customer by name, business name, or customer code. Returns matching customer details including addresses and order history.","input_schema":{"type":"object","properties":{"query":{"type":"string","description":"Customer name, business name, or code to search for. E.g. 'Good Food', 'Rahul', 'Oberoi', 'CG00313'"}},"required":["query"]}},{"name":"search_product","description":"Search the product catalog by name or keyword. Returns matching products with item_code, name, PackSize, UnitWeight, and category.","input_schema":{"type":"object","properties":{"query":{"type":"string","description":"Product name or keyword. E.g. 'amul butter', 'coke 300ml', 'cheese', 'mayo'"}},"required":["query"]}},{"name":"get_order_history","description":"Get a customer's order history \u2014 what they typically order, quantities, and frequency. Use after customer is identified.","input_schema":{"type":"object","properties":{"customer_code":{"type":"string","description":"The customer code, e.g. 'CG00313'"}},"required":["customer_code"]}}];
 
 var hist = [];
@@ -150,31 +150,61 @@ function toolLookupCustomer(query) {
 function toolSearchProduct(query) {
   var q = query.toLowerCase().replace(/[^a-z0-9\s]/g, '');
   var words = q.split(/\s+/).filter(function(w) { return w.length > 1; });
-  var scored = [];
+  var histCodes = {};
+  var histItems = [];
+  // Step 1: Search customer's order history FIRST
+  if (identifiedCust && CUSTS[identifiedCust]) {
+    var cItems = CUSTS[identifiedCust].items;
+    for (var h = 0; h < cItems.length; h++) {
+      var it = cItems[h];
+      var hname = it.name.toLowerCase();
+      var hscore = 0;
+      if (hname.indexOf(q) !== -1) hscore += 100;
+      for (var w = 0; w < words.length; w++) {
+        if (hname.indexOf(words[w]) !== -1) hscore += 10;
+      }
+      if (hscore > 0) {
+        hscore += 500; // history boost
+        hscore += it.cnt; // order frequency boost
+        histItems.push({score: hscore, r: {
+          item_code: it.code, item_name: it.name,
+          pack_size: it.ps, unit_weight_kg: it.uw,
+          category: it.grp,
+          from_history: true, times_ordered: it.cnt,
+          typical_qty: it.minq + '-' + it.maxq + ' PCS'
+        }});
+        histCodes[it.code] = true;
+      }
+    }
+    histItems.sort(function(a,b){return b.score-a.score});
+  }
+  // Step 2: Search full catalog (skip already-matched history items)
+  var catItems = [];
   for (var i = 0; i < PRODS.length; i++) {
     var p = PRODS[i];
+    if (histCodes[p.c]) continue;
     var name = p.n.toLowerCase();
     var score = 0;
-    // Exact substring match
     if (name.indexOf(q) !== -1) score += 100;
-    // Word matches
     for (var w = 0; w < words.length; w++) {
       if (name.indexOf(words[w]) !== -1) score += 10;
     }
-    if (score > 0) scored.push({product: p, score: score});
+    if (score > 0) {
+      catItems.push({score: score, r: {
+        item_code: p.c, item_name: p.n,
+        pack_size: p.ps, unit_weight_kg: p.uw,
+        category: p.g,
+        from_history: false
+      }});
+    }
   }
-  scored.sort(function(a, b) { return b.score - a.score; });
-  var results = scored.slice(0, 8).map(function(s) {
-    return {
-      item_code: s.product.c,
-      item_name: s.product.n,
-      pack_size: s.product.ps,
-      unit_weight_kg: s.product.uw,
-      category: s.product.g
-    };
-  });
+  catItems.sort(function(a,b){return b.score-a.score});
+  // Combine: history first, then catalog, max 8
+  var combined = histItems.concat(catItems).slice(0, 8);
+  var results = combined.map(function(s){return s.r});
   if (results.length === 0) return {found: false, message: 'No product found matching "' + query + '"'};
-  return {found: true, count: results.length, products: results};
+  var hCount = histItems.length > 8 ? 8 : histItems.length;
+  return {found: true, count: results.length, from_history: hCount, from_catalog: results.length - hCount, products: results};
 }
 
 function toolGetHistory(custCode) {
