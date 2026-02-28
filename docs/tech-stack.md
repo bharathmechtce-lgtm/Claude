@@ -11,8 +11,9 @@
 | **Language** | Python 3.11+ | Most LLM libraries are Python-first. Claude SDK, Google Sheets API, WhatsApp API — all have mature Python support. Claude Code can generate Python well. |
 | **Web Framework** | FastAPI | Handles webhooks (Meta sends messages here), serves Agent API. Async-native = handles concurrent messages well. Auto-generates API docs. |
 | **Database** | PostgreSQL | Stores customers, products, conversations, order queue, audit log. JSONB support for flexible per-client fields. Battle-tested, free. |
-| **LLM (extraction)** | Claude Sonnet 4.5 | 100% recall, 100% product match, 91% qty match in eval. Best accuracy. ~$0.037/order. |
-| **LLM SDK** | anthropic (Python) | Official Anthropic Python SDK. Simple: `client.messages.create(...)` |
+| **LLM (extraction + vision)** | Claude Sonnet 4.5 | 100% recall, 100% product match, 91% qty match in eval. Best accuracy. ~$0.037/order. Also handles images natively (multimodal) — no separate OCR needed for photos. |
+| **LLM SDK** | anthropic (Python) | Official Anthropic Python SDK. Simple: `client.messages.create(...)`. Supports image inputs as base64 or URL. |
+| **PDF extraction** | PyMuPDF (fitz) or pdf2image | Extract text from PDFs. If scanned/handwritten → convert pages to images → send to Sonnet vision. |
 | **Google Sheets** | google-api-python-client | Google Sheets API v4. Append rows, update cells. Each client gets their own Sheet. |
 | **WhatsApp** | Meta Cloud API (direct REST) | No BSP middleman. Direct HTTPS calls to send/receive. No SDK needed — just `requests`. |
 | **Task scheduling** | APScheduler or Celery (later) | For: conversation timeout checks (every minute), heartbeat monitoring, Sheet status updates. Start with APScheduler (in-process, simple). Move to Celery if needed. |
@@ -68,10 +69,10 @@
 |---|---|
 | Hetzner VPS (CX21 or CX31) | ~$8-15 |
 | Domain name | ~$1 |
-| Claude Sonnet API (~170 orders/day) | ~$189 |
+| Claude Sonnet API (~170 orders/day + queries) | ~$220-250 |
 | Google Sheets API | Free |
 | Meta WhatsApp Cloud API | Free (first 1000 conversations/month free, then ~$0.01-0.05/conversation) |
-| **Total** | **~$200-210/month** |
+| **Total** | **~$230-270/month** |
 
 At ₹25-40K/month per client revenue, this is profitable from client #1.
 
@@ -85,13 +86,15 @@ fastapi              # Web framework
 uvicorn              # ASGI server for FastAPI
 sqlalchemy           # Database ORM
 psycopg2-binary      # PostgreSQL driver
-anthropic            # Claude API SDK
+anthropic            # Claude API SDK (includes vision/multimodal support)
 google-api-python-client  # Google Sheets
 google-auth          # Google auth for Sheets
 httpx                # Async HTTP client (for WhatsApp API calls)
 pyyaml               # Config file loading
 apscheduler          # Periodic task scheduling
 pydantic             # Data validation (built into FastAPI)
+pymupdf              # PDF text extraction + page-to-image conversion
+pillow               # Image handling (resize before sending to Sonnet)
 
 # Local agent
 requests             # HTTP client for polling cloud API
@@ -106,8 +109,10 @@ pyinstaller          # Package as Windows executable (dev dependency)
 |---|---|
 | clients | Client config (TJUK, ACS) — WhatsApp credentials, ERP type, business rules |
 | customers | Customer master per client — phone numbers, codes, names |
+| sales_reps | Sales rep master — phone numbers, assigned customer list per client |
 | ship_to_addresses | Delivery addresses per customer (TJUK uses, ACS doesn't) |
 | products | Product catalog per client — SKU codes, aliases, pack sizes, weights |
+| price_lists | Price data per customer or per pricing tier — for price queries |
 | order_history | Past orders per customer — for HIL checks and LLM context |
 | conversations | Active conversation state per customer — state machine tracking |
 | order_queue | Confirmed orders waiting for ERP sync |
@@ -117,3 +122,6 @@ pyinstaller          # Package as Windows executable (dev dependency)
 ---
 
 *Last updated: 28 February 2026*
+*Change log:*
+*- v1: Initial tech stack*
+*- v2: Added vision/multimodal (Sonnet handles images), PDF extraction, sales_reps + price_lists tables, revised cost estimate*

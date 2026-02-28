@@ -10,6 +10,9 @@
 4. **Pull-based agent** — local agent polls cloud for confirmed orders. No inbound ports needed at client site.
 5. **Per-client deployment** — separate config, separate order queue, shared codebase.
 6. **Google Sheets as visibility/HIL layer** — no custom UI to build.
+7. **Sales reps can order on behalf of customers** — not just direct customers. A salesperson's phone maps to multiple customer accounts.
+8. **Bot is a full order assistant** — not just an order extractor. Handles price queries, catalog questions, delivery dates, and order modifications (with cutoff rules).
+9. **All input types from day 1** — text, images (handwritten lists, product photos), PDFs (purchase orders), OCR. Not deferred to a later phase.
 
 ---
 
@@ -27,10 +30,19 @@
 │  └──────────────────────────┬──────────────────────────────────┘     │
 │                              │                                        │
 │  ┌──────────────────────────▼──────────────────────────────────┐     │
-│  │  CUSTOMER IDENTIFIER                                         │     │
-│  │  Lookup sender phone → customers table                       │     │
-│  │  Known? → proceed                                            │     │
-│  │  Unknown? → HIL(a): ask identity, notify ops, pause          │     │
+│  │  SENDER IDENTIFIER                                           │     │
+│  │  Lookup sender phone:                                        │     │
+│  │    → Customer? → proceed with their context                  │     │
+│  │    → Sales rep? → identify which customer (from msg or ask)  │     │
+│  │    → Unknown? → HIL(a): ask identity, notify ops, pause      │     │
+│  └──────────────────────────┬──────────────────────────────────┘     │
+│                              │                                        │
+│  ┌──────────────────────────▼──────────────────────────────────┐     │
+│  │  INPUT PREPROCESSOR                                          │     │
+│  │  Text → pass through                                         │     │
+│  │  Image → send to Sonnet vision (multimodal)                  │     │
+│  │  PDF → extract text / send pages as images to Sonnet         │     │
+│  │  Voice note → Whisper transcription (future) / ask to type   │     │
 │  └──────────────────────────┬──────────────────────────────────┘     │
 │                              │                                        │
 │  ┌──────────────────────────▼──────────────────────────────────┐     │
@@ -42,21 +54,29 @@
 │  └──────────────────────────┬──────────────────────────────────┘     │
 │                              │ (buffer complete)                      │
 │  ┌──────────────────────────▼──────────────────────────────────┐     │
-│  │  ORDER PROCESSOR (LLM Pipeline)                              │     │
+│  │  INTENT CLASSIFIER + PROCESSOR (LLM Pipeline)                │     │
 │  │                                                               │     │
 │  │  1. Build enriched prompt:                                    │     │
 │  │     - Customer context (name, code, address)                  │     │
 │  │     - Product catalog (with SalPackUn, BWeight1 for conv.)    │     │
+│  │     - Price list (customer's pricing tier)                    │     │
+│  │     - Delivery schedule + cutoff rules                        │     │
 │  │     - Order history (typical products + quantities)           │     │
 │  │     - Conversation history (full thread so far)               │     │
-│  │     - Current message(s)                                      │     │
+│  │     - Current message(s) / extracted image+PDF content        │     │
 │  │                                                               │     │
-│  │  2. Sonnet 4.5: extract order → structured JSON               │     │
-│  │     - Product matching against catalog                        │     │
-│  │     - Quantity conversion (case→PCS, kg→PCS, direct)          │     │
-│  │     - Confidence scoring per line item                        │     │
+│  │  2. Sonnet 4.5: classify intent + process                     │     │
+│  │     Intents:                                                   │     │
+│  │       ORDER        → extract items, match, convert, confirm   │     │
+│  │       QUERY_PRICE  → answer from price list                   │     │
+│  │       QUERY_CATALOG→ answer from product catalog              │     │
+│  │       QUERY_DELIVERY→ answer from delivery schedule           │     │
+│  │       MODIFY_ORDER → check cutoff, update if allowed          │     │
+│  │       CANCEL_ORDER → check cutoff, cancel if allowed          │     │
+│  │       GREETING     → respond politely                         │     │
+│  │       COMPLEX/OTHER→ HIL escalation                           │     │
 │  │                                                               │     │
-│  │  3. Post-processing validation:                               │     │
+│  │  3. Post-processing validation (for ORDER intent):            │     │
 │  │     - Verify conversions programmatically (SalPackUn/BWeight) │     │
 │  │     - Check HIL(b): any product not in customer's history?    │     │
 │  │     - Check HIL(c): any qty ±20% from customer's typical?     │     │
@@ -148,52 +168,115 @@ CONFIRMING
 
 | ID | Trigger | Detection Method | Action |
 |----|---------|-----------------|--------|
-| (a) | New customer | Phone not in `customers` table | BLOCKS order. Bot asks identity. Ops notified. |
+| (a) | New customer | Phone not in `customers` or `sales_reps` table | BLOCKS order. Bot asks identity. Ops notified. |
 | (b) | New product for customer | Product not in `order_history` for this customer | FLAGS line item. Order still processes. Shown in confirmation + Google Sheet. |
 | (c) | Qty ±20% from typical | Compare against min/max/median in `order_history` | FLAGS line item. Bot mentions it: "You usually order X, this is Y — confirming." |
+| (d) | Query bot can't answer | Price not in system, delivery date unknown, complex question | Bot says "Let me check with the team." Ops notified. |
+| (e) | Modification past cutoff | Customer/rep wants to change order after cutoff window | Bot explains cutoff. Flags for ops to handle manually. |
 
-- (b) and (c) are warnings, not blockers — customer still confirms, ops reviews in Sheet
-- (a) is a blocker — cannot process without knowing who's ordering
+- **(a)** is a blocker — cannot process without knowing who's ordering
+- **(b)** and **(c)** are warnings — customer still confirms, ops reviews in Sheet
+- **(d)** and **(e)** are escalations — bot hands off to human gracefully
+
+---
+
+## Sender Types
+
+| Sender Type | Identification | Behavior |
+|---|---|---|
+| **Customer** | Phone found in `customers` table | Bot proceeds with that customer's context (catalog, prices, history) |
+| **Sales rep** | Phone found in `sales_reps` table | Bot asks "Which customer?" or detects customer name from message. Rep's phone maps to N customers. |
+| **Unknown** | Phone not in either table | HIL(a): Bot asks for identity, notifies ops. Order paused. |
+
+### Sales Rep Flow
+```
+Sales rep sends: "Order for Kumar Stores — mixture 10, murukku 5"
+  → Bot detects "Kumar Stores" → loads Kumar Stores context → processes order
+  → Confirmation sent to rep (not to Kumar Stores directly)
+
+Sales rep sends: "mixture 10, murukku 5" (no customer mentioned)
+  → Bot asks: "Which customer is this order for?"
+  → Rep replies: "Kumar Stores"
+  → Bot loads context → processes
+```
 
 ---
 
 ## Message Types the Bot Handles
 
-| Message Type | Bot Action |
+### Input Formats
+| Format | Processing |
 |---|---|
-| Order (text) | Process → confirm |
-| Order modification ("add X", "change to Y") | Update running order → re-confirm |
-| Cancellation ("cancel the butter") | Remove from order → re-confirm |
-| Confirmation ("YES", "ok", "confirmed") | Push to queue |
-| Correction ("no, 8 not 10") | Update → re-confirm |
-| Greeting ("hi", "good morning") | Respond politely, ask for order |
-| Voice note | Phase 1: "Could you type your order? Voice support coming soon." |
-| Image | Phase 1: "Could you type your order? Image support coming soon." |
-| Unrelated/chatter | Politely redirect to ordering |
+| Text | Direct to LLM |
+| Image (photo of handwritten list, product photo) | Sonnet 4.5 vision — multimodal, processes image directly |
+| PDF (purchase orders, typed lists) | Extract text + send pages as images to Sonnet |
+| Voice note | Phase 1: ask to type. Phase 2: Whisper transcription → text → LLM |
+
+### Intent Types
+| Intent | Bot Action |
+|---|---|
+| **ORDER** (text, image, or PDF) | Extract items → match SKU → convert qty → confirm |
+| **QUERY_PRICE** ("how much is X?", "price for mixture?") | Answer from customer's price list. If no price data → HIL. |
+| **QUERY_CATALOG** ("do you have X?", "what flavors?") | Answer from product catalog for this client. |
+| **QUERY_DELIVERY** ("when will my order come?", "delivery date?") | Answer from delivery schedule rules. |
+| **MODIFY_ORDER** ("add X", "change to Y", "make it 8 not 10") | If within cutoff window → update order → re-confirm. If past cutoff → "Sorry, cutoff was X hours ago." → HIL if they push. |
+| **CANCEL_ORDER** ("cancel my order", "cancel the butter") | If within cutoff window → cancel → confirm cancellation. If past cutoff → HIL. |
+| **CONFIRMATION** ("YES", "ok", "confirmed") | Push to queue |
+| **GREETING** ("hi", "good morning") | Respond politely |
+| **COMPLEX / OTHER** | HIL escalation — anything the bot can't handle confidently |
+
+### Order Modification Cutoff
+- Each client config has `modification_cutoff_hours` (e.g., 4 hours before delivery)
+- If a customer/rep wants to modify/cancel after cutoff → bot says "The cutoff for changes was [time]. I've flagged this for the team."
+- Ops team sees it in Google Sheet → handles manually
 
 ---
 
 ## Data Flow Summary
 
 ```
-WhatsApp msg → Webhook → Identify customer → Buffer → LLM extract
-→ HIL check → Clarify or Confirm → Customer says YES
-→ Order Queue (PostgreSQL) → Google Sheet updated
-→ Agent polls → Picks up order → Writes to SAP/Tally
-→ Reports SYNCED → Google Sheet status updated → Done
+WhatsApp msg (text/image/PDF) → Webhook → Identify sender (customer or sales rep)
+→ Preprocess input (OCR/PDF extraction if needed) → Buffer (1-2 min)
+→ LLM: classify intent
+  → ORDER: extract + match + convert → HIL check → Confirm → YES → Queue → ERP
+  → QUERY: answer from data (prices/catalog/delivery) → respond
+  → MODIFY/CANCEL: check cutoff → update or escalate → re-confirm
+  → COMPLEX: HIL escalation → ops handles
 ```
+
+---
+
+## Data Requirements Per Client
+
+The bot needs the following data loaded per client to answer questions and process orders:
+
+| Data | Used For | Source |
+|---|---|---|
+| Product catalog (SKUs, names, aliases, pack sizes, weights) | SKU matching, catalog queries | ERP export |
+| Price lists (per customer or per tier) | Price queries, order value validation | ERP export |
+| Customer master (codes, names, phones, addresses) | Customer identification | ERP export |
+| Sales rep master (phones, assigned customers) | Sales rep identification + customer mapping | Client provides |
+| Order history (per customer) | HIL checks (b) and (c), LLM context | ERP export |
+| Delivery schedule (days, cutoff times) | Delivery queries, modification cutoff | Client config |
+| Ship-to addresses (for clients that need it) | Delivery location selection | ERP export |
 
 ---
 
 ## Key Design Principles
 
-1. **Customer always confirms** — no order goes to SAP without explicit "YES"
+1. **Customer/rep always confirms** — no order goes to SAP without explicit "YES"
 2. **LLM is grounded** — only matches against provided product catalog, never invents products
 3. **Post-processing validates LLM** — programmatic check of unit conversions after LLM
-4. **Agent is stateless** — pulls work, does it, reports. No local state to manage.
-5. **Google Sheet is the ops dashboard** — no custom UI needed
-6. **Per-client config, shared codebase** — new client = new YAML file + new container
+4. **Bot answers what it can, escalates what it can't** — prices, catalog, delivery = bot handles. Complex queries = HIL.
+5. **Agent is stateless** — pulls work, does it, reports. No local state to manage.
+6. **Google Sheet is the ops dashboard** — no custom UI needed
+7. **Per-client config, shared codebase** — new client = new YAML file + new container
+8. **All input types supported** — text, images, PDFs. Sonnet's multimodal capability handles images natively.
+9. **Sales reps are first-class users** — not an afterthought. Rep → customer mapping is core.
 
 ---
 
 *Last updated: 28 February 2026*
+*Change log:*
+*- v1: Initial architecture (real-time bot, 1-to-1 chats, basic order flow)*
+*- v2: Added sales rep support, query handling (prices/catalog/delivery), order modification with cutoff, image/PDF/OCR input support, HIL triggers (d) and (e)*
