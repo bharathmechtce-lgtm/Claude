@@ -54,9 +54,26 @@
 │  └──────────────────────────┬──────────────────────────────────┘     │
 │                              │ (buffer complete)                      │
 │  ┌──────────────────────────▼──────────────────────────────────┐     │
-│  │  INTENT CLASSIFIER + PROCESSOR (LLM Pipeline)                │     │
+│  │  INTENT CLASSIFIER + PROCESSOR (Two-Model LLM Pipeline)       │     │
 │  │                                                               │     │
-│  │  1. Build enriched prompt:                                    │     │
+│  │  STEP 1 — CLASSIFY (Haiku 4.5 — fast, cheap):                │     │
+│  │     Input: message text + minimal context                     │     │
+│  │     Output: intent label                                      │     │
+│  │       ORDER, QUERY_PRICE, QUERY_CATALOG, QUERY_DELIVERY,     │     │
+│  │       MODIFY_ORDER, CANCEL_ORDER, GREETING, COMPLEX/OTHER    │     │
+│  │                                                               │     │
+│  │  STEP 2 — ROUTE by intent:                                    │     │
+│  │                                                               │     │
+│  │    ORDER/MODIFY/CANCEL → STEP 3 (Sonnet — heavy)             │     │
+│  │    IMAGE/PDF input     → STEP 3 (Sonnet — needs vision)      │     │
+│  │    QUERY_PRICE         → Haiku answers from price list        │     │
+│  │    QUERY_CATALOG       → Haiku answers from product catalog   │     │
+│  │    QUERY_DELIVERY      → Haiku answers from delivery schedule │     │
+│  │    GREETING            → Haiku responds politely              │     │
+│  │    COMPLEX/OTHER       → HIL escalation                       │     │
+│  │                                                               │     │
+│  │  STEP 3 — EXTRACT ORDER (Sonnet 4.5 — accurate, multimodal): │     │
+│  │     Build enriched prompt:                                    │     │
 │  │     - Customer context (name, code, address)                  │     │
 │  │     - Product catalog (with SalPackUn, BWeight1 for conv.)    │     │
 │  │     - Price list (customer's pricing tier)                    │     │
@@ -64,19 +81,9 @@
 │  │     - Order history (typical products + quantities)           │     │
 │  │     - Conversation history (full thread so far)               │     │
 │  │     - Current message(s) / extracted image+PDF content        │     │
+│  │     → Extract items, match SKUs, convert quantities           │     │
 │  │                                                               │     │
-│  │  2. Sonnet 4.5: classify intent + process                     │     │
-│  │     Intents:                                                   │     │
-│  │       ORDER        → extract items, match, convert, confirm   │     │
-│  │       QUERY_PRICE  → answer from price list                   │     │
-│  │       QUERY_CATALOG→ answer from product catalog              │     │
-│  │       QUERY_DELIVERY→ answer from delivery schedule           │     │
-│  │       MODIFY_ORDER → check cutoff, update if allowed          │     │
-│  │       CANCEL_ORDER → check cutoff, cancel if allowed          │     │
-│  │       GREETING     → respond politely                         │     │
-│  │       COMPLEX/OTHER→ HIL escalation                           │     │
-│  │                                                               │     │
-│  │  3. Post-processing validation (for ORDER intent):            │     │
+│  │  STEP 4 — POST-PROCESSING (code, not LLM):                   │     │
 │  │     - Verify conversions programmatically (SalPackUn/BWeight) │     │
 │  │     - Check HIL(b): any product not in customer's history?    │     │
 │  │     - Check HIL(c): any qty ±20% from customer's typical?     │     │
@@ -280,3 +287,4 @@ The bot needs the following data loaded per client to answer questions and proce
 *Change log:*
 *- v1: Initial architecture (real-time bot, 1-to-1 chats, basic order flow)*
 *- v2: Added sales rep support, query handling (prices/catalog/delivery), order modification with cutoff, image/PDF/OCR input support, HIL triggers (d) and (e)*
+*- v3: Two-model LLM pipeline (Haiku for classification + simple tasks, Sonnet for order extraction + vision)*
