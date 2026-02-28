@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TJUK Order Bot - Chat Simulator</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;background:#f0f2f5;height:100vh;overflow:hidden;color:#111b21}
+.app{display:flex;height:100vh}
+.sidebar{width:340px;min-width:340px;background:#fff;border-right:1px solid #e9edef;display:flex;flex-direction:column}
+.sb-head{background:#202c33;color:#fff;padding:14px 16px;font-size:16px;font-weight:600}
+.sb-cfg{padding:10px 12px;border-bottom:1px solid #e9edef;background:#fafafa}
+.sb-cfg label{display:block;font-size:10px;color:#667781;margin-bottom:2px;font-weight:600;text-transform:uppercase}
+.sb-cfg input,.sb-cfg select{width:100%;padding:6px 10px;border:1px solid #e9edef;border-radius:6px;font-size:12px;outline:none;margin-bottom:6px}
+.fbar{display:flex;gap:4px;padding:8px 12px;border-bottom:1px solid #e9edef}
+.fb{padding:4px 10px;border:1px solid #e9edef;border-radius:14px;background:#fff;font-size:11px;cursor:pointer;font-weight:500}
+.fb:hover{background:#f5f5f5}.fb.on{background:#00a884;color:#fff;border-color:#00a884}
+.slist{flex:1;overflow-y:auto}
+.si{padding:10px 12px;border-bottom:1px solid #e9edef;cursor:pointer}
+.si:hover{background:#f5f6f6}.si.sel{background:#f0f2f5;border-left:3px solid #00a884}
+.si .r1{display:flex;justify-content:space-between;margin-bottom:2px}
+.si .cn{font-weight:600;font-size:13px}.si .dt{font-size:10px;color:#667781}
+.si .r2{display:flex;gap:5px;font-size:10px;color:#667781;align-items:center}
+.bdg{display:inline-block;padding:1px 6px;border-radius:8px;font-size:9px;font-weight:700;text-transform:uppercase}
+.bdg.easy{background:#dcfce7;color:#16a34a}.bdg.medium{background:#fef9c3;color:#a16207}.bdg.hard{background:#fee2e2;color:#dc2626}
+.si .ft{font-size:10px;color:#667781;margin-top:2px;font-style:italic}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.wel{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#667781;text-align:center;padding:40px}
+.wel h2{font-size:20px;color:#111b21;margin-bottom:6px}.wel p{font-size:12px;max-width:360px;line-height:1.5}
+.cw{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.chd{background:#202c33;color:#fff;padding:10px 16px;display:flex;justify-content:space-between;align-items:center}
+.chd .cnn{font-weight:600;font-size:14px}.chd .cm{font-size:10px;color:#8696a0}
+.chd .acts{display:flex;gap:5px}
+.btn{padding:5px 12px;border:none;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;color:#fff}
+.bg{background:#00a884}.bg:hover{background:#008069}
+.bb{background:#0070f3}.bb:hover{background:#005bd4}
+.bdd{background:#374151}.bdd:hover{background:#4b5563}
+.cbd{flex:1;overflow-y:auto;background:#efeae2;padding:12px 40px}
+.sysmsg{text-align:center;margin:8px 0}
+.sysmsg span{background:#e2ddd5;color:#667781;padding:3px 8px;border-radius:6px;font-size:10px}
+.mw{display:flex;margin-bottom:3px}.mw.cu{justify-content:flex-start}.mw.bo{justify-content:flex-end}
+.mb{max-width:60%;padding:6px 10px;border-radius:7px;font-size:13px;line-height:1.35;white-space:pre-wrap;word-wrap:break-word;box-shadow:0 1px .5px rgba(0,0,0,.13)}
+.mw.cu .mb{background:#fff;border-top-left-radius:0}.mw.bo .mb{background:#d9fdd3;border-top-right-radius:0}
+.mb .sn{font-size:10px;font-weight:600;color:#008069;margin-bottom:1px}
+.mb .mt{font-size:9px;color:#667781;text-align:right;margin-top:2px}
+.typw{display:flex;gap:4px;padding:8px 12px;align-items:center}
+.tdt{width:6px;height:6px;background:#8696a0;border-radius:50%;animation:tp 1.4s infinite ease-in-out}
+.tdt:nth-child(2){animation-delay:.2s}.tdt:nth-child(3){animation-delay:.4s}
+@keyframes tp{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-5px);opacity:1}}
+.ci{background:#f0f2f5;padding:8px 16px;display:flex;gap:8px;align-items:flex-end;border-top:1px solid #e9edef}
+.ci textarea{flex:1;padding:8px 10px;border:1px solid #e9edef;border-radius:6px;font-size:12px;font-family:inherit;resize:none;outline:none;min-height:36px;max-height:100px;line-height:1.3}
+.ci textarea:focus{border-color:#00a884}
+.sndb{width:38px;height:36px;border-radius:50%;background:#00a884;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sndb:hover{background:#008069}.sndb:disabled{background:#ccc;cursor:not-allowed}
+.sndb svg{fill:#fff;width:16px;height:16px}
+.rp{width:380px;min-width:380px;background:#fff;border-left:1px solid #e9edef;display:flex;flex-direction:column;overflow:hidden}
+.rph{background:#202c33;color:#fff;padding:10px 12px;display:flex;gap:5px}
+.rtb{padding:4px 10px;border-radius:14px;cursor:pointer;font-size:11px;font-weight:500;color:#8696a0;border:1px solid transparent}
+.rtb:hover{color:#fff}.rtb.on{background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.3)}
+.rpb{flex:1;overflow-y:auto;padding:12px}
+.emp{text-align:center;padding:30px 16px;color:#667781}
+.stbl{width:100%;font-size:10px;border-collapse:collapse}
+.stbl th{background:#f8fafc;padding:5px 4px;text-align:left;font-weight:600;border-bottom:2px solid #e9edef;font-size:9px;text-transform:uppercase;color:#667781;position:sticky;top:0}
+.stbl td{padding:4px;border-bottom:1px solid #f1f5f9;vertical-align:top}
+.stg{background:#f0f9ff;padding:4px 6px;font-weight:600;font-size:9px;color:#0070f3;border-bottom:1px solid #bae6fd}
+.rc{background:#f8fafc;border:1px solid #e9edef;border-radius:8px;padding:12px;margin-bottom:8px}
+.rc h3{font-size:12px;margin-bottom:6px}
+.srow{display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:11px}
+.sbar{height:4px;background:#e5e7eb;border-radius:2px;flex:1;margin:0 8px;overflow:hidden}
+.sfill{height:100%;border-radius:2px;transition:width .5s}
+.sfill.g{background:#16a34a}.sfill.p{background:#f59e0b}.sfill.r{background:#dc2626}
+.ctbl{width:100%;font-size:9px;border-collapse:collapse;margin-top:4px}
+.ctbl th{background:#f1f5f9;padding:4px 3px;text-align:left;font-weight:600;font-size:8px;text-transform:uppercase;border-bottom:1px solid #e9edef}
+.ctbl td{padding:3px;border-bottom:1px solid #f1f5f9}
+.ctbl tr.ma td{background:#f0fdf4}.ctbl tr.qm td{background:#fffbeb}.ctbl tr.ex td,.ctbl tr.mi td{background:#fef2f2}
+.sbdg{display:inline-block;padding:1px 4px;border-radius:3px;font-size:8px;font-weight:700}
+.sbdg.ma{background:#dcfce7;color:#16a34a}.sbdg.qm{background:#fef9c3;color:#a16207}.sbdg.ex{background:#fee2e2;color:#dc2626}.sbdg.mi{background:#fee2e2;color:#dc2626}
+.ov{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:100;align-items:center;justify-content:center}
+.ov.sh{display:flex}
+.modd{background:#fff;border-radius:10px;width:620px;max-height:76vh;overflow-y:auto;padding:20px;box-shadow:0 16px 44px rgba(0,0,0,.3)}
+.modd h2{font-size:15px;margin-bottom:12px}
+.modd pre{background:#1e293b;color:#e2e8f0;padding:12px;border-radius:6px;font-size:10px;overflow-x:auto;max-height:360px;overflow-y:auto;white-space:pre-wrap;word-break:break-all}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="sidebar">
+  <div class="sb-head">TJUK Order Bot Simulator</div>
+  <div class="sb-cfg">
+    <label>API Key</label><input type="password" id="apiKey" placeholder="sk-ant-...">
+    <label>Model</label>
+    <select id="mdl"><option value="claude-sonnet-4-5-20250929">Sonnet 4.5</option><option value="claude-haiku-4-5-20251001">Haiku 4.5</option><option value="claude-opus-4-20250514">Opus 4</option></select>
+  </div>
+  <div class="fbar">
+    <button class="fb on" onclick="fl('all',this)">All</button>
+    <button class="fb" onclick="fl('EASY',this)">Easy</button>
+    <button class="fb" onclick="fl('MEDIUM',this)">Medium</button>
+    <button class="fb" onclick="fl('HARD',this)">Hard</button>
+  </div>
+  <div class="slist" id="sl"></div>
+</div>
+<div class="main">
+  <div class="wel" id="wel">
+    <h2>WhatsApp Order Bot Simulator</h2>
+    <p>Select a scenario, enter your API key, and chat with the order bot in real-time.</p>
+    <p style="margin-top:8px;font-size:10px;color:#999">You type as the customer. Bot responds via Claude. Click Extract Order for JSON.</p>
+  </div>
+  <div class="cw" id="cw" style="display:none">
+    <div class="chd">
+      <div><div class="cnn" id="hn">-</div><div class="cm" id="hm">-</div></div>
+      <div class="acts">
+        <button class="btn bg" onclick="pfill()">Prefill Msgs</button>
+        <button class="btn bb" onclick="extr()">Extract Order</button>
+        <button class="btn bdd" onclick="rst()">Reset</button>
+      </div>
+    </div>
+    <div class="cbd" id="cb"></div>
+    <div class="ci">
+      <textarea id="inp" placeholder="Type as customer..." rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();snd()}" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px'"></textarea>
+      <button class="sndb" onclick="snd()"><svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button>
+    </div>
+  </div>
+</div>
+<div class="rp">
+  <div class="rph">
+    <div class="rtb on" data-t="sap" onclick="rtab('sap',this)">SAP Truth</div>
+    <div class="rtb" data-t="res" onclick="rtab('res',this)">Results</div>
+    <div class="rtb" data-t="ctx" onclick="rtab('ctx',this)">Context</div>
+  </div>
+  <div class="rpb" id="rpb"><div class="emp">Select a scenario to see SAP truth</div></div>
+</div>
+</div>
+<div class="ov" id="ov" onclick="if(event.target===this)this.classList.remove('sh')">
+  <div class="modd">
+    <h2>Extracted Order (JSON)</h2>
+    <pre id="ej">Loading...</pre>
+    <div style="margin-top:12px;text-align:right">
+      <button class="btn bb" onclick="navigator.clipboard.writeText(document.getElementById('ej').textContent)">Copy</button>
+      <button class="btn bdd" onclick="document.getElementById('ov').classList.remove('sh')" style="margin-left:5px">Close</button>
+    </div>
+  </div>
+</div>
+<script>
+var SC=null,sel=null,hist=[],sp='',cf='all',wt=false,lc=null;
+
+async function init(){
+  try{var r=await fetch('test_scenarios.json');var d=await r.json();SC=d.scenarios;rl()}
+  catch(e){document.getElementById('sl').innerHTML='<div class="emp">Failed to load test_scenarios.json. Place this HTML in the scenarios/ folder.</div>'}
+}
+
+function rl(){
+  var el=document.getElementById('sl');
+  var f=cf==='all'?SC:SC.filter(function(s){return s.difficulty===cf});
+  el.innerHTML=f.map(function(s){
+    var mc=s.conversations_1to1.reduce(function(a,c){return a+c.messages.filter(function(m){return m.role==='customer'}).length},0);
+    var isSel=sel&&sel.scenario_id===s.scenario_id;
+    return '<div class="si'+(isSel?' sel':'')+'" onclick="pk('+s.scenario_id+')">'+
+      '<div class="r1"><span class="cn">S'+String(s.scenario_id).padStart(2,'0')+' '+s.chat_name+'</span><span class="dt">'+s.date+'</span></div>'+
+      '<div class="r2"><span class="bdg '+s.difficulty.toLowerCase()+'">'+s.difficulty+'</span><span>'+mc+' msgs</span><span>'+s.sap_truth_count+' SAP</span></div>'+
+      '<div class="ft">'+s.features+'</div></div>'
+  }).join('')
+}
+
+function fl(v,b){cf=v;document.querySelectorAll('.fb').forEach(function(x){x.classList.remove('on')});b.classList.add('on');rl()}
+
+function pk(id){
+  sel=SC.find(function(s){return s.scenario_id===id});if(!sel)return;
+  hist=[];lc=null;sp=bsp(sel);
+  document.getElementById('wel').style.display='none';
+  document.getElementById('cw').style.display='flex';
+  document.getElementById('hn').textContent=sel.chat_name;
+  document.getElementById('hm').textContent=sel.card_codes.join(', ')+' | '+sel.difficulty+' | '+sel.sap_truth_count+' SAP items';
+  document.getElementById('cb').innerHTML='<div class="sysmsg"><span>S'+String(id).padStart(2,'0')+' loaded - '+sel.features+'</span></div>';
+  rSAP();rl();document.getElementById('inp').focus()
+}
+
+function bsp(s){
+  var p='You are a WhatsApp order assistant for TJUK, a food distribution company in Mumbai.
+';
+  p+='You are chatting 1-on-1 with a customer via WhatsApp. Be helpful, concise, and natural.
+
+';
+  p+='CUSTOMER CONTEXT:
+  Customer: '+s.card_codes.join(', ')+' - '+s.card_names.join(', ')+'
+  Ship-to Addresses:
+';
+  s.ship_to_addresses.forEach(function(a){p+='    - '+a+'
+'});
+  p+='
+YOUR BEHAVIOR:
+';
+  p+='1. When customer sends an order, acknowledge naturally
+';
+  p+='2. Read items and quantities - confirm what you understood
+';
+  p+='3. If location/outlet missing, ask for it
+';
+  p+='4. If product name ambiguous, ask for clarification
+';
+  p+='5. Handle add messages by merging into current order
+';
+  p+='6. Handle cancel/remove by updating the order
+';
+  p+='7. Keep a RUNNING ORDER - after each interaction know the full state
+';
+  p+='8. Be conversational but efficient
+
+';
+  p+='QUANTITY CONVERSION RULES:
+';
+  p+='  CASE/BOX: X case = X * PackSize
+';
+  p+='  KG: X kg = X / UnitWeight
+';
+  p+='  DIRECT: X pcs/btl/pkt/nos = X PCS
+
+';
+  p+='CRITICAL: Keep track of cumulative order.
+
+';
+  if(s.historical_patterns&&s.historical_patterns.length){
+    p+='HISTORICAL ORDER PATTERNS:
+';
+    s.historical_patterns.slice(0,20).forEach(function(h){
+      p+='  '+h.item_code+' | '+(h.item_name||'').substring(0,45)+' | ordered '+h.order_count+'x | typical qty: '+Math.round(h.min_qty)+'-'+Math.round(h.max_qty)+'
+'
+    })
+  }
+  p+='
+Respond naturally. Keep responses SHORT (2-4 lines max). Do NOT output JSON unless asked.
+';
+  return p
+}
+
+async function snd(ov){
+  var inp=document.getElementById('inp');var txt=ov||inp.value.trim();
+  if(!txt||wt)return;
+  var key=document.getElementById('apiKey').value.trim();
+  if(!key){alert('Enter API key first.');return}
+  addMsg('cu',txt);if(!ov)inp.value='';
+  hist.push({role:'user',content:txt});wt=true;showT();
+  try{
+    var resp=await callAPI(key,hist,sp);hideT();
+    hist.push({role:'assistant',content:resp});addMsg('bo',resp)
+  }catch(e){hideT();addMsg('bo','[Error: '+e.message+']')}
+  wt=false;inp.focus()
+}
+
+async function callAPI(key,msgs,sys){
+  var mdl=document.getElementById('mdl').value;
+  var r=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'x-api-key':key,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:mdl,max_tokens:2048,system:sys,messages:msgs})
+  });
+  var d=await r.json();
+  if(r.status!==200)throw new Error(d.error?d.error.message:JSON.stringify(d));
+  return d.content.filter(function(b){return b.type==='text'}).map(function(b){return b.text}).join('')
+}
+
+async function pfill(){
+  if(!sel)return;var key=document.getElementById('apiKey').value.trim();
+  if(!key){alert('Enter API key.');return}
+  var msgs=[];
+  sel.conversations_1to1.forEach(function(c){c.messages.forEach(function(m){if(m.role==='customer')msgs.push(m)})});
+  msgs.sort(function(a,b){return a.time.localeCompare(b.time)});
+  for(var i=0;i<msgs.length;i++){
+    while(wt)await new Promise(function(r){setTimeout(r,200)});
+    await snd(msgs[i].text)
+  }
+}
+
+async function extr(){
+  if(!hist.length){alert('Send messages first.');return}
+  var key=document.getElementById('apiKey').value.trim();
+  if(!key){alert('Enter API key.');return}
+  var ep='Now output the FINAL complete order as structured JSON. Include ALL items (additions minus cancellations). Output ONLY this JSON format:
+{
+  "orders": [{
+    "ship_to": "LOCATION or DEFAULT",
+    "lines": [{
+      "item_code": "CODE or UNKNOWN",
+      "item_name": "NAME",
+      "quantity": 72,
+      "uom": "PCS",
+      "original_text": "customer text",
+      "conversion_applied": "math"
+    }]
+  }]
+}
+Rules: ALL quantities in PCS. Match products via fuzzy matching. UNKNOWN if no match.';
+  document.getElementById('ej').textContent='Extracting...';
+  document.getElementById('ov').classList.add('sh');
+  var em=hist.concat([{role:'user',content:ep}]);
+  try{
+    var resp=await callAPI(key,em,sp);
+    var jm=resp.match(/\{[\s\S]*\}/);
+    if(jm){
+      try{var parsed=JSON.parse(jm[0]);document.getElementById('ej').textContent=JSON.stringify(parsed,null,2);
+        if(sel&&sel.sap_truth){lc=cmpFn(parsed,sel.sap_truth);rRes();rtab('res',document.querySelector('[data-t="res"]'))}
+      }catch(e){document.getElementById('ej').textContent=resp}
+    }else{document.getElementById('ej').textContent=resp}
+  }catch(e){document.getElementById('ej').textContent='Error: '+e.message}
+}
+
+function cmpFn(llm,sap){
+  if(!llm||!llm.orders)return{matched:0,ts:sap.length,tl:0,qc:0,extra:0,missed:sap.length,det:[]};
+  var lines=[];
+  llm.orders.forEach(function(o){var sh=o.ship_to||'DEFAULT';(o.lines||[]).forEach(function(l){
+    lines.push({code:l.item_code||'UNKNOWN',name:l.item_name||'',qty:l.quantity||0})
+  })});
+  var used={},det=[],qc=0;
+  lines.forEach(function(ll){
+    var bi=-1,bs=0;
+    sap.forEach(function(st,i){if(used[i])return;var sc=ll.code===st.item_code?1:fzz(ll.name,st.description);if(sc>bs){bs=sc;bi=i}});
+    if(bi>=0&&bs>=.4){
+      used[bi]=true;var st=sap[bi];
+      var lq=parseFloat(ll.qty)||0,sq=parseFloat(st.quantity)||0;
+      var qm=sq>0?Math.abs(lq-sq)/sq<=.05:Math.abs(lq-sq)<.01;
+      if(qm)qc++;
+      det.push({s:qm?'MATCH':'QTY_MISMATCH',ln:ll.name,lq:lq,sn:st.description,sq:sq})
+    }else{det.push({s:'EXTRA',ln:ll.name,lq:ll.qty,sn:'-',sq:0})}
+  });
+  sap.forEach(function(st,i){if(!used[i])det.push({s:'MISSED',ln:'-',lq:0,sn:st.description,sq:st.quantity})});
+  var uc=Object.keys(used).length;
+  return{matched:uc,ts:sap.length,tl:lines.length,qc:qc,extra:lines.length-uc,missed:sap.length-uc,det:det}
+}
+
+function fzz(a,b){
+  if(!a||!b)return 0;a=a.toLowerCase();b=b.toLowerCase();
+  var s=a.length<b.length?a:b,l=a.length<b.length?b:a;
+  if(!l.length)return 1;
+  var m=s.length,n=l.length;
+  var dp=[];for(var i=0;i<=m;i++){dp[i]=[];for(var j=0;j<=n;j++)dp[i][j]=0}
+  for(var i=1;i<=m;i++)for(var j=1;j<=n;j++)dp[i][j]=s[i-1]===l[j-1]?dp[i-1][j-1]+1:Math.max(dp[i-1][j],dp[i][j-1]);
+  return 2*dp[m][n]/(m+n)
+}
+
+function addMsg(role,txt){
+  var cb=document.getElementById('cb');var w=document.createElement('div');
+  w.className='mw '+(role==='cu'?'cu':'bo');
+  var b=document.createElement('div');b.className='mb';
+  if(role==='cu')b.innerHTML='<div class="sn">You (Customer)</div>';
+  var td=document.createElement('div');td.textContent=txt;b.appendChild(td);
+  var tm=document.createElement('div');tm.className='mt';
+  tm.textContent=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  b.appendChild(tm);w.appendChild(b);cb.appendChild(w);cb.scrollTop=cb.scrollHeight
+}
+
+function showT(){
+  var cb=document.getElementById('cb');var d=document.createElement('div');d.id='typI';d.className='mw bo';
+  d.innerHTML='<div class="mb" style="background:#d9fdd3"><div class="typw"><div class="tdt"></div><div class="tdt"></div><div class="tdt"></div></div></div>';
+  cb.appendChild(d);cb.scrollTop=cb.scrollHeight
+}
+function hideT(){var e=document.getElementById('typI');if(e)e.remove()}
+
+function rst(){if(!sel)return;if(!confirm('Reset?'))return;pk(sel.scenario_id)}
+
+function rtab(t,btn){
+  document.querySelectorAll('.rtb').forEach(function(b){b.classList.remove('on')});btn.classList.add('on');
+  if(t==='sap')rSAP();else if(t==='res')rRes();else rCtx()
+}
+
+function rSAP(){
+  var b=document.getElementById('rpb');
+  if(!sel){b.innerHTML='<div class="emp">Select a scenario</div>';return}
+  var tr=sel.sap_truth;if(!tr||!tr.length){b.innerHTML='<div class="emp">No SAP truth</div>';return}
+  var g={};tr.forEach(function(i){var k=i.ship_to_code||'DEFAULT';if(!g[k])g[k]=[];g[k].push(i)});
+  var h='<div style="font-size:10px;color:#667781;margin-bottom:5px">'+tr.length+' items, '+Object.keys(g).length+' ship-to(s)</div>';
+  Object.keys(g).forEach(function(st2){var items=g[st2];
+    h+='<div class="stg">'+st2+' ('+items.length+')</div>';
+    h+='<table class="stbl"><thead><tr><th>Code</th><th>Description</th><th style="text-align:right">Qty</th><th style="text-align:right">Price</th></tr></thead><tbody>';
+    items.forEach(function(i){
+      h+='<tr><td style="font-family:monospace;font-size:8px;color:#6b7280">'+i.item_code+'</td><td>'+i.description+'</td><td style="text-align:right;font-weight:600">'+i.quantity+'</td><td style="text-align:right;color:#6b7280">'+(i.price?i.price.toFixed(2):'-')+'</td></tr>'
+    });
+    h+='</tbody></table>'
+  });b.innerHTML=h
+}
+
+function rRes(){
+  var b=document.getElementById('rpb');
+  if(!lc){b.innerHTML='<div class="emp">Click Extract Order to see results</div>';return}
+  var r=lc;var pa=r.ts>0?r.matched/r.ts*100:0;var qa=r.matched>0?r.qc/r.matched*100:0;
+  var ov2=r.ts>0?pa*qa/100:0;
+  var pc=pa>=80?'g':pa>=50?'p':'r';var qcc=qa>=80?'g':qa>=50?'p':'r';
+  var h='<div class="rc"><h3>Overall: '+ov2.toFixed(1)+'%</h3>';
+  h+='<div class="srow"><span>Product</span><div class="sbar"><div class="sfill '+pc+'" style="width:'+pa+'%"></div></div><span>'+r.matched+'/'+r.ts+' ('+pa.toFixed(0)+'%)</span></div>';
+  h+='<div class="srow"><span>Qty</span><div class="sbar"><div class="sfill '+qcc+'" style="width:'+qa+'%"></div></div><span>'+r.qc+'/'+r.matched+' ('+qa.toFixed(0)+'%)</span></div>';
+  h+='<div class="srow"><span style="color:#dc2626">Extra: '+r.extra+'</span><span></span><span style="color:#dc2626">Missed: '+r.missed+'</span></div></div>';
+  h+='<table class="ctbl"><thead><tr><th>Status</th><th>LLM Item</th><th>Qty</th><th>SAP Item</th><th>Qty</th></tr></thead><tbody>';
+  var ord2={'MATCH':0,'QTY_MISMATCH':1,'EXTRA':2,'MISSED':3};
+  r.det.sort(function(a,b2){return(ord2[a.s]||4)-(ord2[b2.s]||4)}).forEach(function(d){
+    var c=d.s==='MATCH'?'ma':d.s==='QTY_MISMATCH'?'qm':d.s==='EXTRA'?'ex':'mi';
+    h+='<tr class="'+c+'"><td><span class="sbdg '+c+'">'+d.s+'</span></td><td>'+(d.ln||'-').substring(0,20)+'</td><td style="text-align:right;font-weight:600">'+(d.lq||0)+'</td><td>'+(d.sn||'-').substring(0,20)+'</td><td style="text-align:right;font-weight:600">'+(d.sq||0)+'</td></tr>'
+  });
+  h+='</tbody></table>';b.innerHTML=h
+}
+
+function rCtx(){
+  var b=document.getElementById('rpb');
+  if(!sel){b.innerHTML='<div class="emp">Select a scenario</div>';return}
+  var s=sel;
+  var h='<div class="rc"><h3>Customer</h3><div style="font-size:11px;line-height:1.6">';
+  h+='<b>Cards:</b> '+s.card_codes.join(', ')+'<br><b>Names:</b> '+s.card_names.join(', ')+'<br>';
+  h+='<b>Date:</b> '+s.date+'<br><b>Difficulty:</b> <span class="bdg '+s.difficulty.toLowerCase()+'">'+s.difficulty+'</span><br>';
+  h+='<b>Features:</b> '+s.features+'</div></div>';
+  h+='<div class="rc"><h3>Ship-to ('+s.ship_to_addresses.length+')</h3><ul style="font-size:10px;padding-left:12px;line-height:1.6">';
+  s.ship_to_addresses.forEach(function(a){h+='<li>'+a+'</li>'});h+='</ul></div>';
+  h+='<div class="rc"><h3>Messages</h3><div style="font-size:10px">';
+  s.conversations_1to1.forEach(function(c){c.messages.forEach(function(m){
+    var rc2=m.role==='customer'?'#16a34a':'#2563eb';
+    h+='<div style="margin-bottom:5px;padding:4px 6px;background:#f8fafc;border-radius:4px;border-left:3px solid '+rc2+'">';
+    h+='<div style="font-weight:600;color:'+rc2+';font-size:9px">'+m.role.toUpperCase()+' - '+(m.sender||c.sender)+' ['+m.time+']</div>';
+    h+='<div style="white-space:pre-wrap;margin-top:1px">'+m.text+'</div></div>'
+  })});h+='</div></div>';
+  if(s.historical_patterns&&s.historical_patterns.length){
+    h+='<div class="rc"><h3>History (top 20)</h3><table class="stbl"><thead><tr><th>Item</th><th>Orders</th><th>Qty</th></tr></thead><tbody>';
+    s.historical_patterns.slice(0,20).forEach(function(hp){
+      h+='<tr><td style="font-size:9px">'+(hp.item_name||'').substring(0,30)+'</td><td style="text-align:center">'+hp.order_count+'x</td><td style="text-align:center">'+Math.round(hp.min_qty)+'-'+Math.round(hp.max_qty)+'</td></tr>'
+    });h+='</tbody></table></div>'
+  }
+  b.innerHTML=h
+}
+
+init();
+</script>
+</body>
+</html>
