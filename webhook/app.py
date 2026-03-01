@@ -1,32 +1,33 @@
 #!/usr/bin/env python3
 """
-TJUK WhatsApp Order Bot — Webhook Server
+TJUK WhatsApp Order Bot — Webhook Server (FastAPI)
 
 Receives incoming WhatsApp messages via Meta Cloud API webhook,
 processes them through the Claude LLM, and sends replies back.
 
-Setup:
-  1. Set environment variables (see .env.example)
-  2. Run: python webhook/app.py
-  3. Expose to internet (ngrok, cloudflare tunnel, etc.)
-  4. Register the public URL as webhook in Meta Developer Dashboard
+Run locally:
+  uvicorn webhook.app:app --host 0.0.0.0 --port 8000 --reload
+
+Production (Docker):
+  docker compose up -d
 """
 
 import hashlib
 import hmac
-import json
 import logging
 import os
-import sys
 import time
-import requests
-from flask import Flask, request, jsonify
+
+import httpx
+from fastapi import FastAPI, Request, Response, Query
+from fastapi.responses import PlainTextResponse, JSONResponse
 
 # ---------------------------------------------------------------------------
 # Config
 # ---------------------------------------------------------------------------
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
+
 
 def _load_dotenv(path):
     if not os.path.exists(path):
@@ -42,6 +43,7 @@ def _load_dotenv(path):
             if key and key not in os.environ:
                 os.environ[key] = val
 
+
 _load_dotenv(os.path.join(PROJECT_ROOT, ".env"))
 
 # WhatsApp Cloud API credentials
@@ -53,9 +55,6 @@ WHATSAPP_APP_SECRET = os.environ.get("WHATSAPP_APP_SECRET", "")
 # LLM
 ANTHROPIC_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 LLM_MODEL = os.environ.get("LLM_MODEL", "claude-sonnet-4-5-20250929")
-
-# Batch window: seconds of silence before processing queued messages
-BATCH_WINDOW = int(os.environ.get("BATCH_WINDOW", "60"))
 
 # ---------------------------------------------------------------------------
 # Logging
@@ -69,16 +68,10 @@ log = logging.getLogger("tjuk-bot")
 # ---------------------------------------------------------------------------
 # In-memory conversation state (per phone number)
 # ---------------------------------------------------------------------------
-# conversations[phone] = {
-#   "history": [...],          # Claude messages format
-#   "pending_messages": [...], # messages waiting to be batched
-#   "last_message_time": float,
-#   "system_prompt": str,
-# }
-conversations = {}
+conversations: dict = {}
 
 # ---------------------------------------------------------------------------
-# System prompt (simplified for live use — no scenario/SAP context)
+# System prompt
 # ---------------------------------------------------------------------------
 SYSTEM_PROMPT = """You are a WhatsApp order assistant for TJUK, a food distribution company in Mumbai.
 You are chatting 1-on-1 with a customer via WhatsApp. Be helpful, concise, and natural.
@@ -106,70 +99,82 @@ Do NOT output JSON unless specifically asked. Just chat naturally.
 """
 
 # ---------------------------------------------------------------------------
-# Flask app
+# Async HTTP client (shared across requests)
 # ---------------------------------------------------------------------------
-app = Flask(__name__)
+http_client: httpx.AsyncClient | None = None
+
+# ---------------------------------------------------------------------------
+# FastAPI app
+# ---------------------------------------------------------------------------
+app = FastAPI(title="TJUK WhatsApp Order Bot", version="1.0.0")
+
+
+@app.on_event("startup")
+async def startup():
+    global http_client
+    http_client = httpx.AsyncClient(timeout=30)
+
+    missing = []
+    if not WHATSAPP_TOKEN:
+        missing.append("WHATSAPP_TOKEN")
+    if not WHATSAPP_PHONE_NUMBER_ID:
+        missing.append("WHATSAPP_PHONE_NUMBER_ID")
+    if not ANTHROPIC_KEY:
+        missing.append("ANTHROPIC_API_KEY")
+    if missing:
+        log.warning(f"Missing env vars: {', '.join(missing)}")
+
+    log.info(f"TJUK WhatsApp Bot started — model: {LLM_MODEL}")
+
+
+@app.on_event("shutdown")
+async def shutdown():
+    if http_client:
+        await http_client.aclose()
 
 
 # ---------------------------------------------------------------------------
-# Webhook verification (GET) — Meta sends this to verify your endpoint
+# GET /webhook — Meta verification
 # ---------------------------------------------------------------------------
-@app.route("/webhook", methods=["GET"])
-def verify_webhook():
+@app.get("/webhook")
+async def verify_webhook(
+    request: Request,
+):
     """
-    Meta sends a GET request with these query params:
-      hub.mode = subscribe
-      hub.verify_token = <your verify token>
-      hub.challenge = <random string>
-
-    You must return the challenge value if the verify_token matches.
+    Meta sends a GET with:
+      hub.mode=subscribe & hub.verify_token=<token> & hub.challenge=<challenge>
+    Return the challenge if token matches.
     """
-    mode = request.args.get("hub.mode")
-    token = request.args.get("hub.verify_token")
-    challenge = request.args.get("hub.challenge")
+    mode = request.query_params.get("hub.mode")
+    token = request.query_params.get("hub.verify_token")
+    challenge = request.query_params.get("hub.challenge")
 
     if mode == "subscribe" and token == WEBHOOK_VERIFY_TOKEN:
         log.info("Webhook verified successfully")
-        return challenge, 200
-    else:
-        log.warning("Webhook verification failed: token mismatch")
-        return "Forbidden", 403
+        return PlainTextResponse(challenge, status_code=200)
+
+    log.warning("Webhook verification failed: token mismatch")
+    return PlainTextResponse("Forbidden", status_code=403)
 
 
 # ---------------------------------------------------------------------------
-# Webhook message handler (POST) — Meta sends incoming messages here
+# POST /webhook — incoming messages
 # ---------------------------------------------------------------------------
-@app.route("/webhook", methods=["POST"])
-def handle_webhook():
-    """
-    Receive incoming WhatsApp messages from Meta Cloud API.
-    Payload structure (simplified):
-    {
-      "entry": [{
-        "changes": [{
-          "value": {
-            "messages": [{
-              "from": "919876543210",
-              "type": "text",
-              "text": {"body": "I need 5 cases of butter"}
-            }],
-            "metadata": {"phone_number_id": "..."}
-          }
-        }]
-      }]
-    }
-    """
-    body = request.get_json()
+@app.post("/webhook")
+async def handle_webhook(request: Request):
+    """Receive incoming WhatsApp messages from Meta Cloud API."""
+    raw_body = await request.body()
+    body = await request.json()
 
     if not body:
-        return "OK", 200
+        return PlainTextResponse("OK", status_code=200)
 
     # Validate signature if app secret is configured
     if WHATSAPP_APP_SECRET:
         signature = request.headers.get("X-Hub-Signature-256", "")
-        if not _verify_signature(request.get_data(), signature):
+        if not _verify_signature(raw_body, signature):
             log.warning("Invalid webhook signature — ignoring request")
-            return "Forbidden", 403
+            return PlainTextResponse("Forbidden", status_code=403)
 
     try:
         for entry in body.get("entry", []):
@@ -181,27 +186,29 @@ def handle_webhook():
                     sender_phone = msg.get("from", "")
                     msg_type = msg.get("type", "")
 
-                    # Only handle text messages for now
                     if msg_type == "text":
                         text = msg.get("text", {}).get("body", "")
                         if text:
                             log.info(f"Message from {sender_phone}: {text[:80]}")
-                            _handle_incoming_message(sender_phone, text)
+                            await _handle_incoming_message(sender_phone, text)
                     else:
-                        log.info(f"Ignoring non-text message type: {msg_type} from {sender_phone}")
+                        log.info(
+                            f"Ignoring non-text message type: {msg_type} "
+                            f"from {sender_phone}"
+                        )
 
     except Exception as e:
         log.error(f"Error processing webhook: {e}", exc_info=True)
 
     # Always return 200 quickly — Meta retries on non-200
-    return "OK", 200
+    return PlainTextResponse("OK", status_code=200)
 
 
 # ---------------------------------------------------------------------------
 # Signature verification
 # ---------------------------------------------------------------------------
-def _verify_signature(payload, signature_header):
-    """Verify the X-Hub-Signature-256 from Meta."""
+def _verify_signature(payload: bytes, signature_header: str) -> bool:
+    """Verify X-Hub-Signature-256 from Meta."""
     if not signature_header or not signature_header.startswith("sha256="):
         return False
     expected = hmac.new(
@@ -213,43 +220,28 @@ def _verify_signature(payload, signature_header):
 # ---------------------------------------------------------------------------
 # Message processing
 # ---------------------------------------------------------------------------
-def _handle_incoming_message(phone, text):
-    """
-    Process an incoming message:
-    1. Add to conversation state
-    2. For now, process immediately (batch window logic can be added later
-       with a background scheduler like APScheduler or Celery)
-    3. Call Claude and send reply
-    """
-    # Initialize conversation state if new
+async def _handle_incoming_message(phone: str, text: str):
+    """Process an incoming message: call Claude, send reply."""
     if phone not in conversations:
         conversations[phone] = {
             "history": [],
-            "pending_messages": [],
             "last_message_time": 0,
-            "system_prompt": SYSTEM_PROMPT,
         }
 
     conv = conversations[phone]
     conv["last_message_time"] = time.time()
 
-    # Add user message to history
-    conv["history"].append({
-        "role": "user",
-        "content": text,
-    })
+    # Add user message
+    conv["history"].append({"role": "user", "content": text})
 
     # Call LLM
-    response_text = _call_claude(conv["history"], conv["system_prompt"])
+    response_text = await _call_claude(conv["history"])
 
-    # Add assistant response to history
-    conv["history"].append({
-        "role": "assistant",
-        "content": response_text,
-    })
+    # Add assistant response
+    conv["history"].append({"role": "assistant", "content": response_text})
 
     # Send reply via WhatsApp
-    _send_whatsapp_message(phone, response_text)
+    await _send_whatsapp_message(phone, response_text)
 
     # Keep history manageable (last 50 messages)
     if len(conv["history"]) > 50:
@@ -257,12 +249,12 @@ def _handle_incoming_message(phone, text):
 
 
 # ---------------------------------------------------------------------------
-# Claude API caller
+# Claude API caller (async)
 # ---------------------------------------------------------------------------
-def _call_claude(messages, system_prompt):
+async def _call_claude(messages: list) -> str:
     """Call Claude API and return the response text."""
     try:
-        resp = requests.post(
+        resp = await http_client.post(
             "https://api.anthropic.com/v1/messages",
             headers={
                 "x-api-key": ANTHROPIC_KEY,
@@ -272,10 +264,9 @@ def _call_claude(messages, system_prompt):
             json={
                 "model": LLM_MODEL,
                 "max_tokens": 1024,
-                "system": system_prompt,
+                "system": SYSTEM_PROMPT,
                 "messages": messages,
             },
-            timeout=30,
         )
         data = resp.json()
 
@@ -292,7 +283,6 @@ def _call_claude(messages, system_prompt):
         in_tok = data["usage"]["input_tokens"]
         out_tok = data["usage"]["output_tokens"]
         log.info(f"Claude: {in_tok} in / {out_tok} out tokens")
-
         return text
 
     except Exception as e:
@@ -301,30 +291,28 @@ def _call_claude(messages, system_prompt):
 
 
 # ---------------------------------------------------------------------------
-# WhatsApp Cloud API — send message
+# WhatsApp Cloud API — send message (async)
 # ---------------------------------------------------------------------------
-def _send_whatsapp_message(to_phone, text):
+async def _send_whatsapp_message(to_phone: str, text: str):
     """Send a text message via WhatsApp Cloud API."""
-    url = f"https://graph.facebook.com/v21.0/{WHATSAPP_PHONE_NUMBER_ID}/messages"
-
-    payload = {
-        "messaging_product": "whatsapp",
-        "to": to_phone,
-        "type": "text",
-        "text": {"body": text},
-    }
-
+    url = (
+        f"https://graph.facebook.com/v21.0/"
+        f"{WHATSAPP_PHONE_NUMBER_ID}/messages"
+    )
     try:
-        resp = requests.post(
+        resp = await http_client.post(
             url,
             headers={
                 "Authorization": f"Bearer {WHATSAPP_TOKEN}",
                 "Content-Type": "application/json",
             },
-            json=payload,
-            timeout=10,
+            json={
+                "messaging_product": "whatsapp",
+                "to": to_phone,
+                "type": "text",
+                "text": {"body": text},
+            },
         )
-
         if resp.status_code == 200:
             log.info(f"Reply sent to {to_phone}")
         else:
@@ -337,36 +325,10 @@ def _send_whatsapp_message(to_phone, text):
 # ---------------------------------------------------------------------------
 # Health check
 # ---------------------------------------------------------------------------
-@app.route("/", methods=["GET"])
-def health():
-    return jsonify({
+@app.get("/")
+async def health():
+    return {
         "status": "ok",
         "service": "TJUK WhatsApp Order Bot",
         "active_conversations": len(conversations),
-    })
-
-
-# ---------------------------------------------------------------------------
-# Entry point
-# ---------------------------------------------------------------------------
-if __name__ == "__main__":
-    # Validate required config
-    missing = []
-    if not WHATSAPP_TOKEN:
-        missing.append("WHATSAPP_TOKEN")
-    if not WHATSAPP_PHONE_NUMBER_ID:
-        missing.append("WHATSAPP_PHONE_NUMBER_ID")
-    if not ANTHROPIC_KEY:
-        missing.append("ANTHROPIC_API_KEY")
-
-    if missing:
-        log.warning(f"Missing env vars: {', '.join(missing)}")
-        log.warning("The server will start but some features won't work.")
-
-    port = int(os.environ.get("PORT", 5000))
-    log.info(f"Starting TJUK WhatsApp Bot on port {port}")
-    log.info(f"Webhook URL: http://0.0.0.0:{port}/webhook")
-    log.info(f"LLM Model: {LLM_MODEL}")
-    log.info(f"Batch window: {BATCH_WINDOW}s")
-
-    app.run(host="0.0.0.0", port=port, debug=True)
+    }
