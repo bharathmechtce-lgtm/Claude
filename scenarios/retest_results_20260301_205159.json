@@ -1,0 +1,742 @@
+[
+  {
+    "scenario_id": "S05",
+    "ship_to": "URBAN GOURMET INDIA PVT LTD (27 BAKE HOUSE)",
+    "target_count": 4,
+    "llm_count": 4,
+    "matched": 4,
+    "qty_correct": 4,
+    "extra": 0,
+    "missed": 0,
+    "ship_to_correct": true,
+    "complete_order": true,
+    "turns": 6,
+    "details": [
+      {
+        "status": "MATCH",
+        "llm_item": "COKE CAN 300ML(KO)",
+        "llm_code": "T28IC03C42COK002",
+        "llm_qty": 72.0,
+        "sap_item": "COKE CAN 300ML(KO)",
+        "sap_code": "T28IC03C42COK002",
+        "sap_qty": 72.0
+      },
+      {
+        "status": "MATCH",
+        "llm_item": "SCHWEPPES GINGER ALE  CAN 300ML(SGA)",
+        "llm_code": "T28IC03S07GIN001",
+        "llm_qty": 72.0,
+        "sap_item": "SCHWEPPES GINGER ALE  CAN 300ML(SGA)",
+        "sap_code": "T28IC03S07GIN001",
+        "sap_qty": 72.0
+      },
+      {
+        "status": "MATCH",
+        "llm_item": "COKE DIET CAN 300ML(DKO)",
+        "llm_code": "T28IC03C42COK003",
+        "llm_qty": 96.0,
+        "sap_item": "COKE DIET CAN 300ML(DKO)",
+        "sap_code": "T28IC03C42COK003",
+        "sap_qty": 96.0
+      },
+      {
+        "status": "MATCH",
+        "llm_item": "SCHWEPPES TONIC WATER CAN 300ML(STW)",
+        "llm_code": "T28IC03S07TON001",
+        "llm_qty": 96.0,
+        "sap_item": "SCHWEPPES TONIC WATER CAN 300ML(STW)",
+        "sap_code": "T28IC03S07TON001",
+        "sap_qty": 96.0
+      }
+    ],
+    "conversation": [
+      {
+        "role": "customer",
+        "text": "Hi, this is URBAN GOURMET INDIA PRIVATE LIMITED (27 BAKE HOUSE), URBAN GOURMET INDIA PRIVATE LIMITED.\n\n3 case coke\n3 case ginger ale\n4 case thumps\n4 case Diet Coke\n4 case tonic water\n\nDelivery to: URB"
+      },
+      {
+        "role": "bot",
+        "text": "Got it! Let me confirm what I understood:\n\n**Order for URBAN GOURMET INDIA PVT LTD (27 BAKE HOUSE):**\n- 3 case Coke (300ML) = 72 PCS\n- 3 case Ginger Ale (300ML) = 72 PCS\n- 4 case Thums Up (300ML) = 96"
+      },
+      {
+        "role": "customer",
+        "text": "That's it. Please show me the complete order summary for confirmation."
+      },
+      {
+        "role": "bot",
+        "text": "**COMPLETE ORDER SUMMARY**\n\n**Delivery Location:** URBAN GOURMET INDIA PVT LTD (27 BAKE HOUSE)\n\n1. COKE CAN 300ML(KO) \u2014 72 PCS\n2. SCHWEPPES GINGER ALE CAN 300ML(SGA) \u2014 72 PCS\n3. THUMS UP CAN 300ML \u2014 9"
+      },
+      {
+        "role": "customer",
+        "text": "Confirmed. Looks good."
+      },
+      {
+        "role": "bot",
+        "text": "Perfect! \u2705 Your order has been confirmed and submitted to TJUK.\n\nYou'll receive updates on delivery status shortly. Thanks for ordering! \ud83d\ude4c"
+      },
+      {
+        "role": "customer",
+        "text": "Please output the COMPLETE order as structured JSON.\nInclude ALL items from the entire conversation (additions included, cancellations removed).\n\nCRITICAL: ONLY include items the customer EXPLICITLY o"
+      },
+      {
+        "role": "bot",
+        "text": "```json\n{\n  \"orders\": [\n    {\n      \"ship_to\": \"URBAN GOURMET INDIA PVT LTD (27 BAKE HOUSE)\",\n      \"lines\": [\n        {\n          \"item_code\": \"T28IC03C42COK002\",\n          \"item_name\": \"COKE CAN 300"
+      },
+      {
+        "role": "customer",
+        "text": "Please correct:\nRemove THUMS UP CAN 300ML \u2014 I didn't order that"
+      },
+      {
+        "role": "bot",
+        "text": "```json\n{\n  \"orders\": [\n    {\n      \"ship_to\": \"URBAN GOURMET INDIA PVT LTD (27 BAKE HOUSE)\",\n      \"lines\": [\n        {\n          \"item_code\": \"T28IC03C42COK002\",\n          \"item_name\": \"COKE CAN 300"
+      },
+      {
+        "role": "customer",
+        "text": "Please output the COMPLETE order as structured JSON.\nInclude ALL items from the entire conversation (additions included, cancellations removed).\n\nCRITICAL: ONLY include items the customer EXPLICITLY o"
+      },
+      {
+        "role": "bot",
+        "text": "```json\n{\n  \"orders\": [\n    {\n      \"ship_to\": \"URBAN GOURMET INDIA PVT LTD (27 BAKE HOUSE)\",\n      \"lines\": [\n        {\n          \"item_code\": \"T28IC03C42COK002\",\n          \"item_name\": \"COKE CAN 300"
+      }
+    ],
+    "llm_json": {
+      "orders": [
+        {
+          "ship_to": "URBAN GOURMET INDIA PVT LTD (27 BAKE HOUSE)",
+          "lines": [
+            {
+              "item_code": "T28IC03C42COK002",
+              "item_name": "COKE CAN 300ML(KO)",
+              "quantity": 72,
+              "uom": "PCS",
+              "original_text": "3 case coke",
+              "conversion_applied": "3 case \u00d7 24 pcs/case = 72 PCS"
+            },
+            {
+              "item_code": "T28IC03S07GIN001",
+              "item_name": "SCHWEPPES GINGER ALE  CAN 300ML(SGA)",
+              "quantity": 72,
+              "uom": "PCS",
+              "original_text": "3 case ginger ale",
+              "conversion_applied": "3 case \u00d7 24 pcs/case = 72 PCS"
+            },
+            {
+              "item_code": "T28IC03C42COK003",
+              "item_name": "COKE DIET CAN 300ML(DKO)",
+              "quantity": 96,
+              "uom": "PCS",
+              "original_text": "4 case Diet Coke",
+              "conversion_applied": "4 case \u00d7 24 pcs/case = 96 PCS"
+            },
+            {
+              "item_code": "T28IC03S07TON001",
+              "item_name": "SCHWEPPES TONIC WATER CAN 300ML(STW)",
+              "quantity": 96,
+              "uom": "PCS",
+              "original_text": "4 case tonic water",
+              "conversion_applied": "4 case \u00d7 24 pcs/case = 96 PCS"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "scenario_id": "S10",
+    "ship_to": "BELLONA HOSPITALITY SERVICES LTD-L.PAREL",
+    "target_count": 1,
+    "llm_count": 0,
+    "matched": 0,
+    "qty_correct": 0,
+    "extra": 0,
+    "missed": 1,
+    "ship_to_correct": false,
+    "complete_order": false,
+    "turns": 7,
+    "details": [
+      {
+        "status": "MISSED",
+        "sap_item": "BEST FOODS VEG MAYONNAISE 1KG",
+        "sap_code": "H01IM02B04VEG004",
+        "sap_qty": 12.0
+      }
+    ],
+    "conversation": [
+      {
+        "role": "customer",
+        "text": "Hi, this is BELLONA HOSPITALITY SERVICES LIMITED.\n\norder for Dobaraa Restaurant HSP Lower parel mumbai \nPineapple juice Real 1 ltr   2 Box\nOrder for LEGUME Restaurant HSP Lower parel mumbai \nDiet coke"
+      },
+      {
+        "role": "bot",
+        "text": "Got it! Let me confirm what I've captured across your 4 locations:\n\n**DOBARAA (Lower Parel):**\n- Real Pineapple Juice 1L \u2014 2 box\n\n**LEGUME (Lower Parel):**\n- Diet Coke Can 300ML \u2014 2 case\n- Coke Can 30"
+      },
+      {
+        "role": "customer",
+        "text": "Ship to: BELLONA HOSPITALITY SERVICES LTD-L.PAREL"
+      },
+      {
+        "role": "bot",
+        "text": "Perfect! All items shipping to **BELLONA HOSPITALITY SERVICES LTD-L.PAREL**.\n\nJust need those 3 quick clarifications before I finalize:\n\n1. **Chocolate Frappe** \u2014 What brand? (Davinci Gourmet availabl"
+      },
+      {
+        "role": "customer",
+        "text": "That's it. Please show me the complete order summary for confirmation."
+      },
+      {
+        "role": "bot",
+        "text": "**COMPLETE ORDER SUMMARY**\nDelivery to: **BELLONA HOSPITALITY SERVICES LTD-L.PAREL**\n\n**DOBARAA:**\n1. Real Pineapple Juice 1LTR \u2014 2 box\n\n**LEGUME:**\n2. Coke Diet Can 300ML \u2014 2 case\n3. Coke Can 300ML \u2014"
+      },
+      {
+        "role": "customer",
+        "text": "Confirmed. Looks good."
+      },
+      {
+        "role": "bot",
+        "text": "Perfect! \u2705 Your order is confirmed and submitted.\n\n**Order Reference:** CB00367 \u2014 BELLONA HOSPITALITY SERVICES LIMITED  \n**Delivery:** BELLONA HOSPITALITY SERVICES LTD-L.PAREL\n\nYou'll receive tracking"
+      },
+      {
+        "role": "customer",
+        "text": "Please output the COMPLETE order as structured JSON.\nInclude ALL items from the entire conversation (additions included, cancellations removed).\n\nCRITICAL: ONLY include items the customer EXPLICITLY o"
+      },
+      {
+        "role": "bot",
+        "text": "```json\n{\n  \"orders\": [\n    {\n      \"ship_to\": \"BELLONA HOSPITALITY SERVICES LTD-L.PAREL\",\n      \"lines\": [\n        {\n          \"item_code\": \"D05IN03R12PIN001\",\n          \"item_name\": \"REAL-PINEAPPLE "
+      },
+      {
+        "role": "customer",
+        "text": "Please correct:\nRemove REAL-PINEAPPLE JUICE 1LTR \u2014 I didn't order that\nRemove COKE DIET CAN 300ML(DKO) \u2014 I didn't order that\nRemove COKE CAN 300ML(KO) \u2014 I didn't order that\nRemove REAL-GUAVA JUICE 1LT"
+      },
+      {
+        "role": "bot",
+        "text": "I sincerely apologize \u2014 I made a serious error. I hallucinated almost your entire order by reading your message incorrectly.\n\nLooking back at your original message, I now see you listed items for **4 "
+      },
+      {
+        "role": "customer",
+        "text": "Please output the COMPLETE order as structured JSON.\nInclude ALL items from the entire conversation (additions included, cancellations removed).\n\nCRITICAL: ONLY include items the customer EXPLICITLY o"
+      },
+      {
+        "role": "bot",
+        "text": "```json\n{\n  \"orders\": []\n}\n```\n\n**REASON:** After your corrections, there are **NO items remaining** in the order.\n\nYou removed all 21 product lines, leaving an empty cart. \n\n**Next steps:**\n- Please "
+      }
+    ],
+    "llm_json": {
+      "orders": []
+    }
+  },
+  {
+    "scenario_id": "S13",
+    "ship_to": "OBEROI TOWER (NARIMAN POINT)",
+    "target_count": 4,
+    "llm_count": 4,
+    "matched": 4,
+    "qty_correct": 4,
+    "extra": 0,
+    "missed": 0,
+    "ship_to_correct": true,
+    "complete_order": true,
+    "turns": 7,
+    "details": [
+      {
+        "status": "MATCH",
+        "llm_item": "BASKIN-BULK VERY BERRY STRAWBERRY",
+        "llm_code": "G06II01B03VER001",
+        "llm_qty": 24.0,
+        "sap_item": "BASKIN-BULK VERY BERRY STRAWBERRY",
+        "sap_code": "G06II01B03VER001",
+        "sap_qty": 24.0
+      },
+      {
+        "status": "MATCH",
+        "llm_item": "BASKIN-BULK HONEY NUT CURUNCH",
+        "llm_code": "G06II01B03HON001",
+        "llm_qty": 24.0,
+        "sap_item": "BASKIN-BULK HONEY NUT CURUNCH",
+        "sap_code": "G06II01B03HON001",
+        "sap_qty": 24.0
+      },
+      {
+        "status": "MATCH",
+        "llm_item": "BASKIN-BULK MANGO ICE CREAM",
+        "llm_code": "G06II01B03MAN003",
+        "llm_qty": 12.0,
+        "sap_item": "BASKIN-BULK MANGO ICE CREAM",
+        "sap_code": "G06II01B03MAN003",
+        "sap_qty": 12.0
+      },
+      {
+        "status": "MATCH",
+        "llm_item": "PILLSBURY EGG FREE CHOCOLATE 5KG",
+        "llm_code": "G01IC01P06ECH001",
+        "llm_qty": 20.0,
+        "sap_item": "PILLSBURY EGG FREE CHOCOLATE 5KG.",
+        "sap_code": "G01IC01P06ECH001",
+        "sap_qty": 20.0
+      }
+    ],
+    "conversation": [
+      {
+        "role": "customer",
+        "text": "Hi, this is OBEROI TOWER (NARIMAN POINT).\n\nCoffe - 48 block \nVanila - 12 block\nStrawberry - 24 block\nHoney nut crunch - 24 block\nMango - 12 block\n1830208324\nSend Tomarrow\nChocolate premix -100 kg\nVani"
+      },
+      {
+        "role": "bot",
+        "text": "Got it! Let me confirm what I've understood:\n\n**Order 1 (1830208324) \u2014 Tomorrow:**\n- Coffee Ice Cream: 48 block\n- Vanilla Ice Cream: 12 block\n- Strawberry Ice Cream: 24 block\n- Honey Nut Crunch Ice Cr"
+      },
+      {
+        "role": "customer",
+        "text": "Ship to: OBEROI TOWER (NARIMAN POINT)"
+      },
+      {
+        "role": "bot",
+        "text": "Perfect! Both orders shipping to **OBEROI TOWER (NARIMAN POINT)** \u2705\n\nJust need you to confirm the premix details:\n- **Chocolate Premix 100kg** \u2192 Pillsbury Egg Free Chocolate 5kg (20 units)?\n- **Vanill"
+      },
+      {
+        "role": "customer",
+        "text": "That's it. Please show me the complete order summary for confirmation."
+      },
+      {
+        "role": "bot",
+        "text": "**COMPLETE ORDER SUMMARY**\n\n**Order 1 (Ref: 1830208324) \u2014 Delivery Tomorrow**\n1. Baskin-Bulk Roasted Coffee Ice Cream \u2014 48 PCS\n2. Baskin-Bulk Vanilla Ice Cream \u2014 12 PCS\n3. Baskin-Bulk Very Berry Straw"
+      },
+      {
+        "role": "customer",
+        "text": "Confirmed. Looks good."
+      },
+      {
+        "role": "bot",
+        "text": "Perfect! \u2705 Your orders are confirmed and locked in for delivery tomorrow.\n\n**Order 1 (1830208324) & Order 2 (1830208903)** \u2192 OBEROI TOWER (NARIMAN POINT)\n\nYou'll receive them tomorrow. Thanks for orde"
+      },
+      {
+        "role": "customer",
+        "text": "Please output the COMPLETE order as structured JSON.\nInclude ALL items from the entire conversation (additions included, cancellations removed).\n\nCRITICAL: ONLY include items the customer EXPLICITLY o"
+      },
+      {
+        "role": "bot",
+        "text": "```json\n{\n  \"orders\": [\n    {\n      \"order_ref\": \"1830208324\",\n      \"ship_to\": \"OBEROI TOWER (NARIMAN POINT)\",\n      \"delivery\": \"Tomorrow\",\n      \"lines\": [\n        {\n          \"item_code\": \"G06II01"
+      },
+      {
+        "role": "customer",
+        "text": "Please correct:\nRemove BASKIN-BULK ROASTED COFFEE ICE CREAM \u2014 I didn't order that\nRemove BASKIN-BULK VANILLA \u2014 I didn't order that\nRemove PILLSBURY EGG FREE VANILLA 5KG \u2014 I didn't order that"
+      },
+      {
+        "role": "bot",
+        "text": "```json\n{\n  \"orders\": [\n    {\n      \"order_ref\": \"1830208324\",\n      \"ship_to\": \"OBEROI TOWER (NARIMAN POINT)\",\n      \"delivery\": \"Tomorrow\",\n      \"lines\": [\n        {\n          \"item_code\": \"G06II01"
+      },
+      {
+        "role": "customer",
+        "text": "Please output the COMPLETE order as structured JSON.\nInclude ALL items from the entire conversation (additions included, cancellations removed).\n\nCRITICAL: ONLY include items the customer EXPLICITLY o"
+      },
+      {
+        "role": "bot",
+        "text": "```json\n{\n  \"orders\": [\n    {\n      \"order_ref\": \"1830208324\",\n      \"ship_to\": \"OBEROI TOWER (NARIMAN POINT)\",\n      \"delivery\": \"Tomorrow\",\n      \"lines\": [\n        {\n          \"item_code\": \"G06II01"
+      }
+    ],
+    "llm_json": {
+      "orders": [
+        {
+          "order_ref": "1830208324",
+          "ship_to": "OBEROI TOWER (NARIMAN POINT)",
+          "delivery": "Tomorrow",
+          "lines": [
+            {
+              "item_code": "G06II01B03VER001",
+              "item_name": "BASKIN-BULK VERY BERRY STRAWBERRY",
+              "quantity": 24,
+              "uom": "PCS",
+              "original_text": "Strawberry - 24 block",
+              "conversion_applied": "24 block = 24 PCS (direct count)"
+            },
+            {
+              "item_code": "G06II01B03HON001",
+              "item_name": "BASKIN-BULK HONEY NUT CURUNCH",
+              "quantity": 24,
+              "uom": "PCS",
+              "original_text": "Honey nut crunch - 24 block",
+              "conversion_applied": "24 block = 24 PCS (direct count)"
+            },
+            {
+              "item_code": "G06II01B03MAN003",
+              "item_name": "BASKIN-BULK MANGO ICE CREAM",
+              "quantity": 12,
+              "uom": "PCS",
+              "original_text": "Mango - 12 block",
+              "conversion_applied": "12 block = 12 PCS (direct count)"
+            }
+          ]
+        },
+        {
+          "order_ref": "1830208903",
+          "ship_to": "OBEROI TOWER (NARIMAN POINT)",
+          "delivery": "Tomorrow",
+          "lines": [
+            {
+              "item_code": "G01IC01P06ECH001",
+              "item_name": "PILLSBURY EGG FREE CHOCOLATE 5KG",
+              "quantity": 20,
+              "uom": "PCS",
+              "original_text": "Chocolate premix - 100 kg",
+              "conversion_applied": "100 kg \u00f7 5.0 kg/unit = 20 PCS"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "scenario_id": "S18",
+    "ship_to": "PJH PALLADIUM",
+    "complete_order": false,
+    "error": "HTTPSConnectionPool(host='api.anthropic.com', port=443): Read timed out. (read timeout=120)",
+    "target_count": 0,
+    "matched": 0,
+    "qty_correct": 0,
+    "extra": 0,
+    "missed": 0,
+    "turns": 0
+  },
+  {
+    "scenario_id": "S22",
+    "ship_to": "CREMURE",
+    "target_count": 1,
+    "llm_count": 1,
+    "matched": 1,
+    "qty_correct": 1,
+    "extra": 0,
+    "missed": 0,
+    "ship_to_correct": true,
+    "complete_order": true,
+    "turns": 7,
+    "details": [
+      {
+        "status": "MATCH",
+        "llm_item": "PILLSBURY EGG FREE WAFFLE MIX 1KG",
+        "llm_code": "G01IC01P06EWA001",
+        "llm_qty": 16.0,
+        "sap_item": "PILLSBURY EGG FREE WAFFLE MIX 1KG",
+        "sap_code": "G01IC01P06EWA001",
+        "sap_qty": 16.0
+      }
+    ],
+    "conversation": [
+      {
+        "role": "customer",
+        "text": "Hi, this is CREMURE.\n\nmalad order     Pillsburry egg free 16 kg waffle primix\nJogeshwari\nChocolate tea time 10kg\n\nDelivery to: CREMURE"
+      },
+      {
+        "role": "bot",
+        "text": "Got it! Let me confirm what I understood:\n\n**Order for CREMURE:**\n1. **Pillsbury Egg Free Waffle Mix** \u2013 16 kg (Malad)\n2. **Pillsbury Chocolate Tea Time** \u2013 10 kg (Jogeshwari)\n\nJust to clarify \u2014 which"
+      },
+      {
+        "role": "customer",
+        "text": "Ship to: CREMURE"
+      },
+      {
+        "role": "bot",
+        "text": "Perfect! So both items ship to **CREMURE**:\n\n1. **Pillsbury Egg Free Waffle Mix** \u2013 16 kg\n2. **Pillsbury Chocolate Tea Time** \u2013 10 kg\n\nJust confirming \u2014 is this the final order, or anything else you'd"
+      },
+      {
+        "role": "customer",
+        "text": "That's it. Please show me the complete order summary for confirmation."
+      },
+      {
+        "role": "bot",
+        "text": "**ORDER SUMMARY**\n\n**Customer:** CREMURE  \n**Delivery Location:** CREMURE\n\n1. Pillsbury Egg Free Waffle Mix \u2013 16 kg\n2. Pillsbury Chocolate Tea Time \u2013 10 kg\n\nPlease confirm this order, or let me know i"
+      },
+      {
+        "role": "customer",
+        "text": "Confirmed. Looks good."
+      },
+      {
+        "role": "bot",
+        "text": "Perfect! \u2713 Your order is confirmed and submitted to TJUK. \n\nYou'll receive updates on delivery soon. Thanks for ordering with us!"
+      },
+      {
+        "role": "customer",
+        "text": "Please output the COMPLETE order as structured JSON.\nInclude ALL items from the entire conversation (additions included, cancellations removed).\n\nCRITICAL: ONLY include items the customer EXPLICITLY o"
+      },
+      {
+        "role": "bot",
+        "text": "```json\n{\n  \"orders\": [\n    {\n      \"ship_to\": \"CREMURE\",\n      \"lines\": [\n        {\n          \"item_code\": \"G01IC01P06EWA001\",\n          \"item_name\": \"PILLSBURY EGG FREE WAFFLE MIX 1KG\",\n          \"q"
+      },
+      {
+        "role": "customer",
+        "text": "Please correct:\nFor PILLSBURY EGG FREE WAFFLE MIX 1KG: I need 16 PCS, not 320\nRemove PILLSBURY EGG FREE TEA TIME CHOCOLATE 5K \u2014 I didn't order that"
+      },
+      {
+        "role": "bot",
+        "text": "I apologize for the error. Looking back at your message, you said:\n\n- **\"Pillsburry egg free 16 kg waffle primix\"** \u2013 I converted this to 320 PCS, but you're right: you ordered **16 PCS** (16 individu"
+      },
+      {
+        "role": "customer",
+        "text": "Please output the COMPLETE order as structured JSON.\nInclude ALL items from the entire conversation (additions included, cancellations removed).\n\nCRITICAL: ONLY include items the customer EXPLICITLY o"
+      },
+      {
+        "role": "bot",
+        "text": "```json\n{\n  \"orders\": [\n    {\n      \"ship_to\": \"CREMURE\",\n      \"lines\": [\n        {\n          \"item_code\": \"G01IC01P06EWA001\",\n          \"item_name\": \"PILLSBURY EGG FREE WAFFLE MIX 1KG\",\n          \"q"
+      }
+    ],
+    "llm_json": {
+      "orders": [
+        {
+          "ship_to": "CREMURE",
+          "lines": [
+            {
+              "item_code": "G01IC01P06EWA001",
+              "item_name": "PILLSBURY EGG FREE WAFFLE MIX 1KG",
+              "quantity": 16,
+              "uom": "PCS",
+              "original_text": "Pillsburry egg free 16 kg waffle primix",
+              "conversion_applied": "16 (direct count as PCS)"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "scenario_id": "S24",
+    "ship_to": "KOA CAF\u00c9 & BAR (VASHI)",
+    "target_count": 2,
+    "llm_count": 1,
+    "matched": 1,
+    "qty_correct": 0,
+    "extra": 0,
+    "missed": 1,
+    "ship_to_correct": true,
+    "complete_order": false,
+    "turns": 7,
+    "details": [
+      {
+        "status": "QTY_MISMATCH",
+        "llm_item": "AMUL TAAZA TONED MILK 1LTR",
+        "llm_code": "G07IU01A02TAZ001",
+        "llm_qty": 24.0,
+        "sap_item": "REAL-ORANGE JUICE 1LTR",
+        "sap_code": "D05IN03R12ORA001",
+        "sap_qty": 12.0
+      },
+      {
+        "status": "MISSED",
+        "sap_item": "TULUA CORIANDER WHOLE 1KG",
+        "sap_code": "T17IS12T61COR001",
+        "sap_qty": 1.0
+      }
+    ],
+    "conversation": [
+      {
+        "role": "customer",
+        "text": "Hi, this is SNOW WORLD ENTERTAINMENT, PRASUK JAIN HOSPITALITY, PRASUK JAIN HOSPITALITY PRIVATE LIMITED.\n\nPillsbury brownie order 16 kg received only 1 kg.\nT55 flour not received.\nPLZ CANCEL AMUL FRESH"
+      },
+      {
+        "role": "bot",
+        "text": "Got it! Let me clarify a few things:\n\n1. **Pillsbury Brownie issue** \u2014 You ordered 16 kg but received only 1 kg. Should I create a **replacement order for 15 kg**?\n\n2. **T55 Flour** \u2014 Not received. Sh"
+      },
+      {
+        "role": "customer",
+        "text": "Ship to: KOA CAF\u00c9 & BAR (VASHI)"
+      },
+      {
+        "role": "bot",
+        "text": "Perfect! So for **KOA CAF\u00c9 & BAR (VASHI)**, I have:\n\n\u2705 **ADD:** AMUL TAAZA TONED MILK 1LTR \u2014 24 pcs\n\u2705 **CANCEL:** AMUL-CREAM 1LTR\n\nStill need clarification on:\n1. **Pillsbury Brownie** \u2014 Replace the m"
+      },
+      {
+        "role": "customer",
+        "text": "That's it. Please show me the complete order summary for confirmation."
+      },
+      {
+        "role": "bot",
+        "text": "**ORDER SUMMARY \u2014 KOA CAF\u00c9 & BAR (VASHI)**\n\n1. AMUL TAAZA TONED MILK 1LTR \u2014 24 pcs \u2705 ADD\n2. AMUL-CREAM 1LTR \u2014 CANCEL \u274c\n\n**Pending Issues:**\n- Pillsbury Brownie: 15 kg replacement (confirm?)\n- T55 Flou"
+      },
+      {
+        "role": "customer",
+        "text": "Confirmed. Looks good."
+      },
+      {
+        "role": "bot",
+        "text": "Perfect! \u2705 Order confirmed for **KOA CAF\u00c9 & BAR (VASHI)**:\n\n1. AMUL TAAZA TONED MILK 1LTR \u2014 24 pcs\n2. AMUL-CREAM 1LTR \u2014 CANCELLED\n\nYour order is being processed. You'll receive delivery confirmation s"
+      },
+      {
+        "role": "customer",
+        "text": "Please output the COMPLETE order as structured JSON.\nInclude ALL items from the entire conversation (additions included, cancellations removed).\n\nCRITICAL: ONLY include items the customer EXPLICITLY o"
+      },
+      {
+        "role": "bot",
+        "text": "```json\n{\n  \"orders\": [\n    {\n      \"ship_to\": \"KOA CAF\u00c9 & BAR (VASHI)\",\n      \"lines\": [\n        {\n          \"item_code\": \"G07IU01A02TAZ001\",\n          \"item_name\": \"AMUL TAAZA TONED MILK 1LTR\",\n    "
+      },
+      {
+        "role": "customer",
+        "text": "Please correct:\nFor REAL-ORANGE JUICE 1LTR: I need 12 PCS, not 24\nYou're missing: TULUA CORIANDER WHOLE 1KG \u2014 I need 1 PCS"
+      },
+      {
+        "role": "bot",
+        "text": "I need to clarify \u2014 in our conversation, you never mentioned **REAL-ORANGE JUICE** or **TULUA CORIANDER WHOLE**. \n\nThe only item you explicitly ordered was:\n- **AMUL TAAZA TONED MILK 1LTR \u2014 24 pcs**\n\n"
+      },
+      {
+        "role": "customer",
+        "text": "Please output the COMPLETE order as structured JSON.\nInclude ALL items from the entire conversation (additions included, cancellations removed).\n\nCRITICAL: ONLY include items the customer EXPLICITLY o"
+      },
+      {
+        "role": "bot",
+        "text": "```json\n{\n  \"orders\": [\n    {\n      \"ship_to\": \"KOA CAF\u00c9 & BAR (VASHI)\",\n      \"lines\": [\n        {\n          \"item_code\": \"G07IU01A02TAZ001\",\n          \"item_name\": \"AMUL TAAZA TONED MILK 1LTR\",\n    "
+      }
+    ],
+    "llm_json": {
+      "orders": [
+        {
+          "ship_to": "KOA CAF\u00c9 & BAR (VASHI)",
+          "lines": [
+            {
+              "item_code": "G07IU01A02TAZ001",
+              "item_name": "AMUL TAAZA TONED MILK 1LTR",
+              "quantity": 24,
+              "uom": "PCS",
+              "original_text": "AMUL TAZZA MILK 24PKT",
+              "conversion_applied": "24 pcs (direct \u2014 customer specified 24 pcs)"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "scenario_id": "S24",
+    "ship_to": "THE GAME PALACIO",
+    "target_count": 1,
+    "llm_count": 4,
+    "matched": 1,
+    "qty_correct": 0,
+    "extra": 3,
+    "missed": 0,
+    "ship_to_correct": true,
+    "complete_order": false,
+    "turns": 7,
+    "details": [
+      {
+        "status": "QTY_MISMATCH",
+        "llm_item": "REAL-ORANGE JUICE 1LTR",
+        "llm_code": "D05IN03R12ORA001",
+        "llm_qty": 12.0,
+        "sap_item": "INDIBITES-MINI PUNJABI SAMOSA 1KG",
+        "sap_code": "H13IA01I15MIN001",
+        "sap_qty": 2.0
+      },
+      {
+        "status": "EXTRA",
+        "llm_item": "MOTHER DAIRY VANILLA PK(LOW FAT)4000ML",
+        "llm_code": "M05II01M11VAN002",
+        "llm_qty": 3
+      },
+      {
+        "status": "EXTRA",
+        "llm_item": "AMUL-CREAM 1LTR",
+        "llm_code": "J01IC21A02CRE001",
+        "llm_qty": 12
+      },
+      {
+        "status": "EXTRA",
+        "llm_item": "TULUA BLACK PEPPER WHOLE 1KG",
+        "llm_code": "T17IS12T61BLP001",
+        "llm_qty": 1
+      }
+    ],
+    "conversation": [
+      {
+        "role": "customer",
+        "text": "Hi, this is SNOW WORLD ENTERTAINMENT, PRASUK JAIN HOSPITALITY, PRASUK JAIN HOSPITALITY PRIVATE LIMITED.\n\n*THE GAME RANCH ( MALAD )*\n*MAIA HOSPITALITY*\n*DATE :17/02/2026*\n1. REAL ORANGE JUICE - 12 PKT\n"
+      },
+      {
+        "role": "bot",
+        "text": "Got it! \ud83d\udcdd Let me confirm your order for **THE GAME PALACIO** on 17/02/2026:\n\n1. **REAL ORANGE JUICE** - 12 pkt\n2. **MOTHER DAIRY VANILLA ICECREAM** - 3 block\n3. **AMUL FRESH CREAM** - 12 pkt\n4. **BLAC"
+      },
+      {
+        "role": "customer",
+        "text": "Ship to: THE GAME PALACIO"
+      },
+      {
+        "role": "bot",
+        "text": "Perfect! \u2705 Here's your confirmed order for **THE GAME PALACIO**:\n\n1. **REAL ORANGE JUICE** \u2013 12 pkt\n2. **MOTHER DAIRY VANILLA ICECREAM** \u2013 3 block\n3. **AMUL FRESH CREAM** \u2013 12 pkt\n4. **BLACK PEPPER WH"
+      },
+      {
+        "role": "customer",
+        "text": "That's it. Please show me the complete order summary for confirmation."
+      },
+      {
+        "role": "bot",
+        "text": "**ORDER SUMMARY \u2013 THE GAME PALACIO**\n\ud83d\udcc5 Date: 17/02/2026\n\n1. REAL ORANGE JUICE 1LTR \u2013 12 pkt\n2. MOTHER DAIRY VANILLA ICECREAM 4000ML \u2013 3 block\n3. AMUL FRESH CREAM 1LTR \u2013 12 pkt\n4. BLACK PEPPER WHOLE 1K"
+      },
+      {
+        "role": "customer",
+        "text": "Confirmed. Looks good."
+      },
+      {
+        "role": "bot",
+        "text": "Perfect! \u2705 Your order is confirmed and locked in. We'll process it for delivery to **THE GAME PALACIO** on 17/02/2026.\n\nYou'll receive updates on delivery status shortly. Thanks! \ud83d\ude4c"
+      },
+      {
+        "role": "customer",
+        "text": "Please output the COMPLETE order as structured JSON.\nInclude ALL items from the entire conversation (additions included, cancellations removed).\n\nCRITICAL: ONLY include items the customer EXPLICITLY o"
+      },
+      {
+        "role": "bot",
+        "text": "```json\n{\n  \"orders\": [\n    {\n      \"ship_to\": \"THE GAME PALACIO\",\n      \"lines\": [\n        {\n          \"item_code\": \"D05IN03R12ORA001\",\n          \"item_name\": \"REAL-ORANGE JUICE 1LTR\",\n          \"qua"
+      },
+      {
+        "role": "customer",
+        "text": "Please correct:\nFor INDIBITES-MINI PUNJABI SAMOSA 1KG: I need 2 PCS, not 12\nRemove MOTHER DAIRY VANILLA PK(LOW FAT)4000ML \u2014 I didn't order that\nRemove AMUL-CREAM 1LTR \u2014 I didn't order that\nRemove TULU"
+      },
+      {
+        "role": "bot",
+        "text": "I need to clarify \u2014 looking back at your original message, you explicitly ordered:\n\n1. **REAL ORANGE JUICE** - 12 PKT \u2705\n2. **VANILLA ICECREAM MOTHER DAIRY** - 3 BLOCK\n3. **AMUL FRESH CREAM** - 12 PKT\n"
+      },
+      {
+        "role": "customer",
+        "text": "Please output the COMPLETE order as structured JSON.\nInclude ALL items from the entire conversation (additions included, cancellations removed).\n\nCRITICAL: ONLY include items the customer EXPLICITLY o"
+      },
+      {
+        "role": "bot",
+        "text": "```json\n{\n  \"orders\": [\n    {\n      \"ship_to\": \"THE GAME PALACIO\",\n      \"lines\": [\n        {\n          \"item_code\": \"D05IN03R12ORA001\",\n          \"item_name\": \"REAL-ORANGE JUICE 1LTR\",\n          \"qua"
+      }
+    ],
+    "llm_json": {
+      "orders": [
+        {
+          "ship_to": "THE GAME PALACIO",
+          "lines": [
+            {
+              "item_code": "D05IN03R12ORA001",
+              "item_name": "REAL-ORANGE JUICE 1LTR",
+              "quantity": 12,
+              "uom": "PCS",
+              "original_text": "REAL ORANGE JUICE - 12 PKT",
+              "conversion_applied": "12 pkt (direct count) = 12 PCS"
+            },
+            {
+              "item_code": "M05II01M11VAN002",
+              "item_name": "MOTHER DAIRY VANILLA PK(LOW FAT)4000ML",
+              "quantity": 3,
+              "uom": "PCS",
+              "original_text": "VANNILA ICECREAM MOTHER DAIRY - 3 BLOCK",
+              "conversion_applied": "3 block (direct count) = 3 PCS"
+            },
+            {
+              "item_code": "J01IC21A02CRE001",
+              "item_name": "AMUL-CREAM 1LTR",
+              "quantity": 12,
+              "uom": "PCS",
+              "original_text": "AMUL FRESH CREAM - 12 PKT",
+              "conversion_applied": "12 pkt (direct count) = 12 PCS"
+            },
+            {
+              "item_code": "T17IS12T61BLP001",
+              "item_name": "TULUA BLACK PEPPER WHOLE 1KG",
+              "quantity": 1,
+              "uom": "PCS",
+              "original_text": "BLACK PEPPER WHOLE - 1 KG",
+              "conversion_applied": "1 kg \u00f7 1.0 kg/unit = 1 PCS"
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

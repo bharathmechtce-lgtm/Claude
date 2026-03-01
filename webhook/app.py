@@ -119,7 +119,11 @@ ANTI-HALLUCINATION RULES (CRITICAL — follow these strictly):
 QUANTITY CONVERSION RULES (customers speak in cases/kg, SAP records in PCS):
   CASE/BOX: "X case" → quantity = X × PackSize (from catalogue)
   KG: "X kg" → quantity = X ÷ UnitWeight (from catalogue)
-  DIRECT: "X pcs/btl/pkt/nos/block/bulk/tin/bag" → quantity = X PCS
+  DIRECT (no conversion — just count as PCS):
+    "X pcs/btl/pkt/nos/block/bulk/tin/bag" → quantity = X PCS
+    Example: "24 block" = 24 PCS. Do NOT multiply blocks by pack_size or unit_weight.
+    Example: "12 btl" = 12 PCS. Do NOT multiply bottles by anything.
+  IMPORTANT: "block" means individual units (e.g. ice cream blocks). 1 block = 1 PCS always.
 
 QUANTITY SANITY CHECK:
 - After converting, compare the result against the customer's historical order patterns (if provided)
