@@ -1,10 +1,3 @@
-# Replace YOUR_DOMAIN with your actual domain, e.g.:
-#   bot.tjuk.in
-#   tjuk-bot.yourdomain.com
-#
-# Caddy automatically gets a Let's Encrypt SSL certificate.
-# Make sure your DNS A record points to this server's IP.
-
-YOUR_DOMAIN {
+bot.indianinsightscompany.com {
     reverse_proxy bot:8000
 }
