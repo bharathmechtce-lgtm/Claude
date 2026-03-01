@@ -283,8 +283,63 @@ The bot needs the following data loaded per client to answer questions and proce
 
 ---
 
-*Last updated: 28 February 2026*
+---
+
+## Multi-Tenant Architecture (v0.3.0)
+
+> Full decision record: [ADR-001: Multi-Tenant Architecture](adr-001-multi-tenant-architecture.md)
+
+### Summary
+
+| Aspect | Decision |
+|--------|----------|
+| Meta apps | One per client, all owned by IIC |
+| Bot deployment | Single shared instance (Option A) |
+| Routing | `phone_number_id` from webhook payload → client lookup |
+| Client config | Centralized registry (DB table) with encrypted tokens |
+| Webhook URL | Single URL, all clients point here |
+| Verify token | Shared across all Meta apps |
+
+### Routing Flow
+
+```
+Incoming webhook → extract phone_number_id
+  → lookup client in registry
+  → load client's catalog, prompt, token
+  → process message with client context
+  → reply using client's own WhatsApp token
+```
+
+### Client Registry Schema
+
+```
+clients:
+  client_id          (string, unique)
+  phone_number_id    (string, unique, indexed)
+  access_token       (string, encrypted)
+  business_name      (string)
+  catalog_file       (string, path/reference)
+  system_prompt      (text)
+  welcome_message    (text)
+  delivery_schedule  (JSON)
+  google_sheet_id    (string)
+  active             (boolean)
+```
+
+### MVP Preparation
+
+Even in v0.1.0 (single client), the code follows patterns that ease multi-tenant migration:
+
+1. Centralized config loading (no scattered `os.getenv()` calls)
+2. Single reply function (one place to swap token)
+3. Modular catalog loading (path-based, not hardcoded)
+4. Client-tagged log lines
+
+---
+
+*Last updated: 01 March 2026*
 *Change log:*
 *- v1: Initial architecture (real-time bot, 1-to-1 chats, basic order flow)*
 *- v2: Added sales rep support, query handling (prices/catalog/delivery), order modification with cutoff, image/PDF/OCR input support, HIL triggers (d) and (e)*
 *- v3: Two-model LLM pipeline (Haiku for classification + simple tasks, Sonnet for order extraction + vision)*
+*- v4: Multi-tenant architecture section added (ADR-001)*
