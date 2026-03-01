@@ -1,7 +1,7 @@
 # Product Backlog — WhatsApp Ordering Bot
 
 > **Product Owner:** Bharath
-> **Last Updated:** 2026-03-01
+> **Last Updated:** 2026-03-01 (v0.6.0 added)
 > **Current Version:** v0.1.0 (MVP)
 
 ---
@@ -54,6 +54,17 @@
 | B-033 | Flag HIL (Human-in-the-Loop) items that need manual verification | Dev Team | Planned |
 | B-034 | Delivery mechanism — email / download link / WhatsApp file reply | Dev Team | Planned |
 
+### v0.6.0 — LLM Cost Optimisation & Model Selection
+| Item | Description | Owner | Status |
+|------|-------------|-------|--------|
+| B-050 | Benchmark current per-message cost with Claude Sonnet on real order data | Dev Team | Planned |
+| B-051 | Evaluate cheaper models (Claude Haiku, GPT-4o-mini, open-source) on accuracy vs cost | Dev Team | Planned |
+| B-052 | Test tiered model strategy: fast/cheap model for simple orders, powerful model for complex/ambiguous ones | Dev Team | Planned |
+| B-053 | Implement prompt optimisation — reduce token usage without losing quality | Dev Team | Planned |
+| B-054 | Add usage tracking & cost dashboard (tokens per request, cost per order, cost per client) | Dev Team | Planned |
+| B-055 | Define quality threshold — minimum acceptable order parsing accuracy before switching models | Bharath | Planned |
+| B-056 | Load-test with projected multi-client volumes and calculate monthly cost projections | Dev Team | Planned |
+
 ### v1.0.0 — ERP Integration
 | Item | Description | Owner | Status |
 |------|-------------|-------|--------|
@@ -80,3 +91,4 @@
 - Each version builds on the previous — versions are indicative, not rigid.
 - HIL = Human-in-the-Loop: orders the AI is not confident about get flagged for manual review.
 - The backlog will be refined as ACS feedback and real-world usage data come in.
+- Model cost optimisation (v0.6.0) must be completed before v1.0 launch — scaling to multiple clients on an expensive model without cost analysis is a business risk.
