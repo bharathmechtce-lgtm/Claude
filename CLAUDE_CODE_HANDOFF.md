@@ -430,10 +430,11 @@ Cross-checks every ground truth line against actual SAP order data. Confirms: Pr
 
 ## 12. API KEYS
 
+Keys stored in `.env` file (not committed to repo). Copy `.env.example` to `.env` and fill in your keys.
 ```
-ANTHROPIC_API_KEY=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
-OPENAI_API_KEY=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
-GEMINI_API_KEY=AIzaSyBQrlO-UCoWx7Aik-Re0LkI9FX6TMpkGPY
+ANTHROPIC_API_KEY=<your-anthropic-key>
+OPENAI_API_KEY=<your-openai-key>
+GEMINI_API_KEY=<your-gemini-key>
 ```
 
 ---

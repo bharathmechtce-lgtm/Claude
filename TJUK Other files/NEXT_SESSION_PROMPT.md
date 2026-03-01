@@ -100,9 +100,7 @@ Already pulled and in `whatsapp testing data.xlsx`:
 - Or ask Brady's team for a simple case-size mapping for top 200 products
 
 ## API Keys
-- Anthropic: sk-ant-api03-f31rMJkPCBArFfLcE5kVBe_SFHcvFN9bpETge1meXqd-3kQ2oGDlHxYVngrVH7mOr3OR0GW7joufSZFd3Vpb5Q-8ePCjwAA
-- Google Gemini: AIzaSyBQrlO-UCoWx7Aik-Re0LkI9FX6TMpkGPY
-- OpenAI: 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
+All API keys stored in `.env` file (not committed to repo). See `.env.example` for format.
 
 ## What to do in this session
 
