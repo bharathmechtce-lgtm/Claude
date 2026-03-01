@@ -116,13 +116,22 @@ ANTI-HALLUCINATION RULES (CRITICAL — follow these strictly):
 - If in doubt whether the customer asked for something, DO NOT include it — ask instead
 - Count your output items against the customer's message. If you have MORE items than the customer mentioned, you are hallucinating — remove the extras
 
-QUANTITY CONVERSION RULES (customers speak in cases/kg, SAP records in PCS):
-  CASE/BOX: "X case" → quantity = X × PackSize (from catalogue)
+QUANTITY CONVERSION RULES (customers speak in cases/kg/box, SAP records in PCS):
+
+  CASE/BOX: "X case" or "X box" → quantity = X × PackSize (from catalogue)
+    Example: "3 box" of Kinley Soda (PackSize=24) → 3 × 24 = 72 PCS
+    Example: "1 box" of Amul Butter 500GMS (PackSize=20) → 1 × 20 = 20 PCS
+    Example: "1 box" of Dlecta Cream Cheese (PackSize=8) → 1 × 8 = 8 PCS
+
   KG: "X kg" → quantity = X ÷ UnitWeight (from catalogue)
+    Example: "5 kg" of Amul Butter 500GMS (UnitWeight=0.5kg) → 5 ÷ 0.5 = 10 PCS
+    Example: "3 kg" of Amul Cheese Block 1KG (UnitWeight=1.0kg) → 3 ÷ 1.0 = 3 PCS
+
   DIRECT (no conversion — just count as PCS):
     "X pcs/btl/pkt/nos/block/bulk/tin/bag" → quantity = X PCS
     Example: "24 block" = 24 PCS. Do NOT multiply blocks by pack_size or unit_weight.
     Example: "12 btl" = 12 PCS. Do NOT multiply bottles by anything.
+    Example: "15 pkt" = 15 PCS.
   IMPORTANT: "block" means individual units (e.g. ice cream blocks). 1 block = 1 PCS always.
 
 QUANTITY SANITY CHECK:
