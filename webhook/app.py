@@ -14,6 +14,7 @@ Production (Docker):
 
 import hashlib
 import hmac
+import json
 import logging
 import os
 import time
@@ -66,6 +67,26 @@ logging.basicConfig(
 log = logging.getLogger("tjuk-bot")
 
 # ---------------------------------------------------------------------------
+# Product catalog (loaded at startup)
+# ---------------------------------------------------------------------------
+CATALOG: list = []
+CATALOG_BY_CODE: dict = {}
+
+
+def _load_catalog():
+    """Load product catalog from JSON file."""
+    global CATALOG, CATALOG_BY_CODE
+    catalog_path = os.path.join(PROJECT_ROOT, "scenarios", "product_catalog.json")
+    if os.path.exists(catalog_path):
+        with open(catalog_path) as f:
+            CATALOG = json.load(f)
+        CATALOG_BY_CODE = {p["item_code"]: p for p in CATALOG}
+        log.info(f"Loaded {len(CATALOG)} products from catalog")
+    else:
+        log.warning(f"Product catalog not found at {catalog_path}")
+
+
+# ---------------------------------------------------------------------------
 # In-memory conversation state (per phone number)
 # ---------------------------------------------------------------------------
 conversations: dict = {}
@@ -86,10 +107,38 @@ YOUR BEHAVIOR:
 7. Keep a RUNNING ORDER in your head — after each interaction, you know the full order state
 8. Be conversational but efficient — these are busy restaurant/hotel managers
 
+ANTI-HALLUCINATION RULES (CRITICAL — follow these strictly):
+- ONLY include items the customer EXPLICITLY mentioned or asked for
+- NEVER infer, suggest, or add items the customer did not ask for
+- NEVER add items "they might also need" or "usually ordered together"
+- If the customer says "5kg amul butter" — that is ONE item (amul butter). Do NOT add cheese, ghee, or anything else
+- When extracting the order to JSON, list ONLY the items from the conversation. Zero extras
+- If in doubt whether the customer asked for something, DO NOT include it — ask instead
+- Count your output items against the customer's message. If you have MORE items than the customer mentioned, you are hallucinating — remove the extras
+
 QUANTITY CONVERSION RULES (customers speak in cases/kg, SAP records in PCS):
   CASE/BOX: "X case" → quantity = X × PackSize (from catalogue)
   KG: "X kg" → quantity = X ÷ UnitWeight (from catalogue)
-  DIRECT: "X pcs/btl/pkt/nos" → quantity = X PCS
+  DIRECT: "X pcs/btl/pkt/nos/block/bulk/tin/bag" → quantity = X PCS
+
+QUANTITY SANITY CHECK:
+- After converting, compare the result against the customer's historical order patterns (if provided)
+- If the converted quantity is more than 3× or less than 0.3× their typical order for that item, flag it
+- Example: customer usually orders 10 PCS of butter, but this order converts to 120 PCS → ask "Just confirming — 120 PCS of butter? That's more than your usual order"
+- For first-time items (no history), accept the quantity as-is but confirm during order summary
+
+PRODUCT MATCHING RULES:
+- Match customer text to the PRODUCT CATALOGUE provided in context
+- Use the catalogue item_code and item_name — do NOT invent item codes
+- If a customer's product text matches multiple catalogue items, pick the one with the closest name match
+- If match confidence is low (customer said something vague), ASK for clarification rather than guessing
+- If you genuinely cannot find a match, say so — do NOT fabricate a product or code
+
+ORDER CONFIRMATION (before finalizing):
+- When the customer seems done ordering (or says "that's it" / "done" / "confirm"), show a COMPLETE ORDER SUMMARY
+- Format: numbered list with item name, quantity, and delivery location
+- Ask: "Please confirm this order, or let me know if any changes are needed"
+- Only after customer confirms should you consider the order final
 
 CRITICAL: Keep track of the cumulative order. When asked to summarize or when you
 sense the order is complete, list all items with quantities.
@@ -113,6 +162,8 @@ app = FastAPI(title="TJUK WhatsApp Order Bot", version="1.0.0")
 async def startup():
     global http_client
     http_client = httpx.AsyncClient(timeout=30)
+
+    _load_catalog()
 
     missing = []
     if not WHATSAPP_TOKEN:
@@ -226,16 +277,37 @@ async def _handle_incoming_message(phone: str, text: str):
         conversations[phone] = {
             "history": [],
             "last_message_time": 0,
+            "order_confirmed": False,
         }
 
     conv = conversations[phone]
     conv["last_message_time"] = time.time()
+
+    # Reset order confirmation if new order comes in after a long gap (>30 min)
+    if conv["order_confirmed"] and (time.time() - conv.get("confirmed_at", 0)) > 1800:
+        conv["order_confirmed"] = False
 
     # Add user message
     conv["history"].append({"role": "user", "content": text})
 
     # Call LLM
     response_text = await _call_claude(conv["history"])
+
+    # Track if the bot is presenting a confirmation summary
+    confirm_keywords = ["confirm this order", "please confirm", "any changes"]
+    if any(kw in response_text.lower() for kw in confirm_keywords):
+        conv["awaiting_confirmation"] = True
+
+    # Track if customer confirmed
+    if conv.get("awaiting_confirmation"):
+        confirm_words = ["yes", "ok", "confirm", "done", "all good", "correct",
+                         "perfect", "looks good", "go ahead", "confirmed"]
+        text_lower = text.lower().strip()
+        if any(w in text_lower for w in confirm_words):
+            conv["order_confirmed"] = True
+            conv["confirmed_at"] = time.time()
+            conv["awaiting_confirmation"] = False
+            log.info(f"Order confirmed by {phone}")
 
     # Add assistant response
     conv["history"].append({"role": "assistant", "content": response_text})

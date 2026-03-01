@@ -207,10 +207,31 @@ YOUR BEHAVIOR:
 7. Keep a RUNNING ORDER in your head — after each interaction, you know the full order state
 8. Be conversational but efficient — these are busy restaurant/hotel managers
 
+ANTI-HALLUCINATION RULES (CRITICAL — follow these strictly):
+- ONLY include items the customer EXPLICITLY mentioned or asked for
+- NEVER infer, suggest, or add items the customer did not ask for
+- NEVER add items "they might also need" or "usually ordered together"
+- If the customer says "5kg amul butter" — that is ONE item (amul butter). Do NOT add cheese, ghee, or anything else
+- When extracting the order to JSON, list ONLY the items from the conversation. Zero extras
+- If in doubt whether the customer asked for something, DO NOT include it — ask instead
+- Count your output items against the customer's message. If you have MORE items than the customer mentioned, you are hallucinating — remove the extras
+
 QUANTITY CONVERSION RULES (customers speak in cases/kg, SAP records in PCS):
   CASE/BOX: "X case" → quantity = X × PackSize (from catalogue)
   KG: "X kg" → quantity = X ÷ UnitWeight (from catalogue)
-  DIRECT: "X pcs/btl/pkt/nos/block/bulk/tin" → quantity = X PCS
+  DIRECT: "X pcs/btl/pkt/nos/block/bulk/tin/bag" → quantity = X PCS
+
+QUANTITY SANITY CHECK:
+- After converting, compare the result against the historical order patterns below
+- If the converted quantity is more than 3x or less than 0.3x the customer's median for that item, flag it
+- For first-time items (no history), accept the quantity as-is
+
+PRODUCT MATCHING RULES:
+- Match customer text to the PRODUCT CATALOGUE below using item_code and item_name
+- Do NOT invent item codes — only use codes from the catalogue
+- If a customer's text could match multiple items, pick the closest name match
+- If match confidence is low, ASK for clarification rather than guessing
+- If you cannot find a match, say so — do NOT fabricate a product or code
 
 PRODUCT CATALOGUE (items this customer typically orders):
 """
@@ -218,12 +239,20 @@ PRODUCT CATALOGUE (items this customer typically orders):
         cat = CATALOG_BY_CODE.get(h["item_code"], {})
         pack = cat.get("pack_size", 1)
         weight = cat.get("unit_weight_kg", 0)
+        median = h.get("median_qty", "N/A")
         prompt += (f"  {h['item_code']} | {h['item_name'][:50]} | "
                    f"PackSize={pack} | UnitWeight={weight}kg | "
-                   f"ordered {h['order_count']}x\n")
+                   f"ordered {h['order_count']}x | typical_qty={median}\n")
 
-    prompt += "\nRespond naturally as a WhatsApp assistant. Keep responses SHORT (2-4 lines max).\n"
-    prompt += "Do NOT output JSON unless specifically asked.\n"
+    prompt += """
+ORDER CONFIRMATION:
+- When the customer seems done, show a COMPLETE ORDER SUMMARY
+- Format: numbered list with item name, quantity, and delivery location
+- Ask: "Please confirm this order, or let me know if any changes are needed"
+
+Respond naturally as a WhatsApp assistant. Keep responses SHORT (2-4 lines max).
+Do NOT output JSON unless specifically asked.
+"""
 
     return prompt
 
@@ -231,6 +260,11 @@ PRODUCT CATALOGUE (items this customer typically orders):
 # ── Extraction prompt ──
 EXTRACTION_PROMPT = """Please output the COMPLETE order as structured JSON.
 Include ALL items from the entire conversation (additions included, cancellations removed).
+
+CRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items
+that were not mentioned by the customer. Count the items in your output — they must
+match the number of distinct products the customer asked for. If you have MORE items
+than the customer mentioned, you are hallucinating — remove the extras.
 
 Output ONLY this JSON:
 {
@@ -253,9 +287,10 @@ Output ONLY this JSON:
 
 Rules:
 - ALL quantities MUST be in PCS after conversion
-- Match products to the catalogue using item codes
-- Include conversion notes
+- Match products to the catalogue using item codes — do NOT invent codes
+- Include conversion notes showing your math
 - If you can't match a product, use item_code "UNKNOWN"
+- NEVER include items the customer did not ask for
 """
 
 
@@ -552,6 +587,15 @@ def run_conversation(order_info, model_cfg):
         bot_resp = send(answer)
         print(f"    Bot: {bot_resp[:100]}...")
 
+    # ── Turn 2.5: Request order summary for confirmation ──
+    print(f"    Turn 2.5: Requesting order summary...")
+    summary_resp = send("That's it. Please show me the complete order summary for confirmation.")
+    print(f"    Bot summary: {summary_resp[:150]}...")
+
+    # ── Turn 2.6: Confirm the order ──
+    confirm_resp = send("Confirmed. Looks good.")
+    print(f"    Bot confirm: {confirm_resp[:100]}...")
+
     # ── Turn 3: Extract JSON ──
     print(f"    Turn 3: Requesting JSON extraction...")
     extraction_resp = send(EXTRACTION_PROMPT)
@@ -677,7 +721,8 @@ def build_results_excel(all_results, output_path):
     ws2 = wb.create_sheet("Per-Model Summary")
     h2 = ["Model", "Orders Tested", "Complete Order Accuracy %",
           "Product Recall %", "Product Precision %", "Qty Accuracy %",
-          "Ship-to Accuracy %", "Avg Turns", "Avg Corrections",
+          "Ship-to Accuracy %", "Hallucination Rate %",
+          "Avg Turns", "Avg Corrections",
           "Zero-Correction Orders", "Total Tokens", "Total Cost ($)",
           "Cost per Order ($)"]
     ws2.append(h2)
@@ -703,11 +748,12 @@ def build_results_excel(all_results, output_path):
         precision = total_matched / total_llm * 100 if total_llm else 0
         qty_acc = total_qty / total_matched * 100 if total_matched else 0
         ship_acc = ship_correct / n * 100
+        halluc_rate = total_extra / total_llm * 100 if total_llm else 0
 
         row = [
             model_name, n, f"{complete / n * 100:.0f}%",
             f"{recall:.0f}%", f"{precision:.0f}%", f"{qty_acc:.0f}%",
-            f"{ship_acc:.0f}%",
+            f"{ship_acc:.0f}%", f"{halluc_rate:.0f}%",
             f"{sum(r['turns'] for r in mr) / n:.1f}",
             f"{sum(r['corrections_sent'] for r in mr) / n:.1f}",
             zero_corr, f"{total_tok:,}",
@@ -720,7 +766,7 @@ def build_results_excel(all_results, output_path):
             cell.alignment = wrap
             cell.border = border
 
-    widths2 = [10, 10, 18, 12, 12, 12, 12, 10, 12, 14, 12, 12, 12]
+    widths2 = [10, 10, 18, 12, 12, 12, 12, 14, 10, 12, 14, 12, 12, 12]
     for i, w in enumerate(widths2, 1):
         ws2.column_dimensions[get_column_letter(i)].width = w
 

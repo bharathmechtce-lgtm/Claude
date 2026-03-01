@@ -61,8 +61,45 @@ def word_overlap_score(customer_text, catalog_name):
     return len(matched) / len(cust_words) if cust_words else 0
 
 
+def bidirectional_word_overlap(customer_text, catalog_name):
+    """
+    Bidirectional word overlap — checks both directions to reduce false positives.
+    Returns the harmonic mean (F1) of forward and reverse overlap.
+    Forward: what fraction of customer words appear in catalog name
+    Reverse: what fraction of catalog product words appear in customer text
+    """
+    skip = {"kg", "gm", "gms", "ml", "ltr", "pkt", "btl", "nos",
+            "pcs", "plz", "pls", "send", "order", "add", "for", "the",
+            "and", "of", "in", "to", "a", "ok", "please", "ka", "hai",
+            "ye", "sab"}
+    size_words = {"1KG", "2KG", "5KG", "10KG", "500GM", "200GM", "100GM",
+                  "250GM", "500GMS", "200GMS", "100GMS", "250GMS",
+                  "1LTR", "500ML", "200ML", "1L", "2L", "5L",
+                  "330ML", "750ML", "1000ML"}
+
+    cust_words = set(re.findall(r'[a-zA-Z0-9]{2,}', customer_text.upper())) - \
+                 {w.upper() for w in skip}
+    cat_words = set(re.findall(r'[a-zA-Z0-9]{2,}', catalog_name.upper())) - \
+                size_words
+    # Keep size words in customer set for matching, but don't penalize catalog
+    # for not mentioning them in customer text
+
+    if not cust_words or not cat_words:
+        return 0
+
+    forward = len(cust_words & cat_words) / len(cust_words)  # precision
+    reverse = len(cust_words & cat_words) / len(cat_words)    # recall
+
+    if forward + reverse == 0:
+        return 0
+    return 2 * forward * reverse / (forward + reverse)  # F1
+
+
 def find_best_catalog_match(text, catalog_items):
-    """Find best matching catalog product for customer text."""
+    """
+    Find best matching catalog product for customer text.
+    Uses multiple scoring strategies and picks the best.
+    """
     text_clean = text.strip()
     if not text_clean:
         return None, 0.0
@@ -71,12 +108,16 @@ def find_best_catalog_match(text, catalog_items):
     best_score = 0.0
 
     for p in catalog_items:
-        # Try fuzzy match
+        # Strategy 1: fuzzy sequence match
         fs = fuzzy_score(text_clean, p["item_name"])
-        # Try word overlap
+        # Strategy 2: forward word overlap (customer → catalog)
         ws = word_overlap_score(text_clean, p["item_name"])
-        # Combined score: weighted average
-        combined = max(fs, ws * 0.9)
+        # Strategy 3: bidirectional F1 overlap (reduces false positives)
+        bw = bidirectional_word_overlap(text_clean, p["item_name"])
+
+        # Combined score: best of fuzzy and bidirectional, with forward overlap
+        # weighted down to avoid matching on partial word hits
+        combined = max(fs, bw, ws * 0.85)
 
         if combined > best_score:
             best_score = combined
@@ -623,6 +664,27 @@ for sc in scenarios:
                 reason_parts.append(
                     f"QTY: Conversion failed — {conversion_note}. "
                     f"SAP has {sap_qty}")
+
+        # Historical quantity sanity check
+        if converted_qty is not None and sap_code in hist_by_code:
+            hist = hist_by_code[sap_code]
+            median = hist.get("median_qty", 0)
+            min_qty = hist.get("min_qty", 0)
+            max_qty = hist.get("max_qty", 0)
+            if median and median > 0:
+                ratio = converted_qty / median
+                if ratio > 3.0:
+                    reason_parts.append(
+                        f"QTY OUTLIER: {converted_qty} PCS is {ratio:.1f}x "
+                        f"the typical {median} PCS (range {min_qty}-{max_qty})")
+                elif ratio < 0.3:
+                    reason_parts.append(
+                        f"QTY OUTLIER: {converted_qty} PCS is only "
+                        f"{ratio:.1f}x the typical {median} PCS "
+                        f"(range {min_qty}-{max_qty})")
+        elif converted_qty is not None and sap_code not in hist_by_code:
+            reason_parts.append(
+                f"Qty: first-time item, no history — confirm at close")
 
         if prediction == "AUTO" and not reason_parts:
             reason_parts.append(
