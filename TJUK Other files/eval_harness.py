@@ -21,9 +21,9 @@ from difflib import SequenceMatcher
 # ============================================================
 # API KEYS
 # ============================================================
-ANTHROPIC_KEY = os.environ.get("ANTHROPIC_API_KEY", "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")
-OPENAI_KEY = os.environ.get("OPENAI_API_KEY", "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")
-GEMINI_KEY = os.environ.get("GEMINI_API_KEY", "AIzaSyBQrlO-UCoWx7Aik-Re0LkI9FX6TMpkGPY")
+ANTHROPIC_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+OPENAI_KEY = os.environ.get("OPENAI_API_KEY", "")
+GEMINI_KEY = os.environ.get("GEMINI_API_KEY", "")
 
 # ============================================================
 # MODEL CONFIGS (name, provider, model_id, input_cost_per_M, output_cost_per_M)

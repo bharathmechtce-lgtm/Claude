@@ -33,7 +33,25 @@ from difflib import SequenceMatcher
 # ============================================================
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(os.path.dirname(SCRIPT_DIR), "TJUK Other files")
+PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
 SCENARIOS_PATH = os.path.join(SCRIPT_DIR, "test_scenarios.json")
+
+# Load .env from project root
+def _load_dotenv(path):
+    if not os.path.exists(path):
+        return
+    with open(path) as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, _, val = line.partition("=")
+            key = key.strip()
+            val = val.strip().strip('"').strip("'")
+            if key and key not in os.environ:
+                os.environ[key] = val
+
+_load_dotenv(os.path.join(PROJECT_ROOT, ".env"))
 
 ANTHROPIC_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 DEFAULT_MODEL = "claude-sonnet-4-5-20250929"
