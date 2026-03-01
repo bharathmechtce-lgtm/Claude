@@ -65,6 +65,14 @@
 | B-055 | Define quality threshold — minimum acceptable order parsing accuracy before switching models | Bharath | Planned |
 | B-056 | Load-test with projected multi-client volumes and calculate monthly cost projections | Dev Team | Planned |
 
+### Pre-Launch — Commercial Readiness
+| Item | Description | Owner | Status |
+|------|-------------|-------|--------|
+| B-060 | Finalise revenue model (setup fee + monthly retainer + usage tiers) — see `docs/revenue-model.md` | Bharath / Akash | In Progress |
+| B-061 | Calculate break-even per client using v0.6.0 cost data | Dev Team | Planned |
+| B-062 | Validate pricing with ACS as pilot client | Bharath | Planned |
+| B-063 | Create client rate card & onboarding agreement | Bharath / Akash | Planned |
+
 ### v1.0.0 — ERP Integration
 | Item | Description | Owner | Status |
 |------|-------------|-------|--------|
