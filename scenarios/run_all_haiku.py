@@ -204,62 +204,110 @@ def filter_testable_items(target_items, all_msg_text):
     return testable
 
 
+# Common company/org words to skip when extracting location keywords
+_COMMON_ORG_WORDS = {
+    "good", "food", "concept", "hospitality", "services", "limited",
+    "entertainment", "private", "ltd", "llp", "pvt", "the", "and", "for",
+    "bellona", "prasuk", "jain", "worldwide", "liberty", "monarch", "snow",
+    "world", "innercircle", "hotel", "bar", "cafe", "restaurant",
+}
+
+
+def _ship_to_keywords(ship_to_name):
+    """Extract distinctive location keywords from a ship-to name."""
+    words = set()
+    for w in re.findall(r'[a-zA-Z]{3,}', ship_to_name.lower()):
+        if w not in _COMMON_ORG_WORDS:
+            words.add(w)
+    return words
+
+
+def _msg_match_score(msg, ship_words):
+    """Score how well a message matches a set of ship-to keywords."""
+    loc = msg.get("location", "").lower()
+    msg_text = msg.get("text", "").lower()
+    combined = loc + " " + msg_text
+    combined_words = set(re.findall(r'[a-zA-Z]{3,}', combined))
+
+    score = 0
+    for w in ship_words:
+        if len(w) < 4:
+            continue
+        if w in combined_words:
+            score += len(w)  # longer words = higher score
+        else:
+            # Fuzzy match
+            for tw in combined_words:
+                if len(tw) >= 4 and SequenceMatcher(None, w, tw).ratio() > 0.7:
+                    score += len(w) * 0.7
+                    break
+    return score
+
+
 # ── Improved message routing for multi-location scenarios ──
 def find_relevant_messages(scenario, target_ship_to):
-    """Find messages relevant to a specific ship-to address."""
+    """Find messages relevant to a specific ship-to address.
+
+    Uses exclusive routing: each message goes to its BEST matching ship-to,
+    preventing one ship-to from grabbing all messages via a shared word.
+    """
     order_msgs = [m for m in scenario["original_group_messages"]
                   if m["type"] in ("order", "order_addition")]
 
     if not order_msgs:
         return []
 
-    # Single ship-to: all messages are relevant
+    # Single ship-to in SAP: all messages are relevant
     ship_tos_in_sap = set(i["ship_to_code"] for i in scenario["sap_truth"])
     if len(ship_tos_in_sap) == 1:
         return order_msgs
 
-    # Multi ship-to: try to match messages to this ship-to
-    ship_lower = target_ship_to.lower()
-    # Extract key location words from ship-to name (skip common prefixes)
-    ship_words = set()
-    for w in re.findall(r'[a-zA-Z]{3,}', ship_lower):
-        if w not in {"good", "food", "concept", "hospitality", "services",
-                     "limited", "entertainment", "private", "ltd", "llp",
-                     "pvt", "the", "and", "for", "bellona", "prasuk", "jain",
-                     "worldwide", "liberty", "monarch", "snow", "world",
-                     "innercircle", "hotel"}:
-            ship_words.add(w)
+    # Build keyword sets for ALL ship-tos
+    all_ship_keywords = {}
+    for st in ship_tos_in_sap:
+        all_ship_keywords[st] = _ship_to_keywords(st)
 
+    # Detect "shared geography" words — words that appear in most/all messages
+    # These are useless for routing (e.g., "parel" when all restaurants are in Parel)
+    all_msg_texts = [m.get("text", "").lower() + " " + m.get("location", "").lower()
+                     for m in order_msgs]
+    all_kw = set()
+    for kw_set in all_ship_keywords.values():
+        all_kw.update(kw_set)
+    shared_words = set()
+    for kw in all_kw:
+        if len(kw) < 4:
+            continue
+        msg_count = sum(1 for t in all_msg_texts if kw in t)
+        if msg_count >= len(order_msgs) * 0.7 and len(order_msgs) >= 3:
+            shared_words.add(kw)
+
+    # Remove shared words from all keyword sets
+    if shared_words:
+        for st in all_ship_keywords:
+            all_ship_keywords[st] = all_ship_keywords[st] - shared_words
+
+    target_words = all_ship_keywords.get(target_ship_to, set())
+
+    # EXCLUSIVE ROUTING: For each message, find which ship-to it BEST matches.
+    # Only include messages where target_ship_to is the best (or tied-best) match.
     relevant = []
     relevant_groups = set()
 
     for m in order_msgs:
-        # Check location field
-        loc = m.get("location", "").lower()
-        msg_text = m.get("text", "").lower()
-        combined = loc + " " + msg_text
+        # Score this message against ALL ship-tos
+        scores = {}
+        for st, kw in all_ship_keywords.items():
+            scores[st] = _msg_match_score(m, kw)
 
-        matched = False
+        my_score = scores.get(target_ship_to, 0)
+        best_score = max(scores.values()) if scores else 0
 
-        # Direct word match in location field or message text
-        for w in ship_words:
-            if len(w) >= 4 and w in combined:
-                matched = True
-                break
+        if my_score <= 0:
+            continue
 
-        # Fuzzy match on ship-to keywords
-        if not matched:
-            for w in ship_words:
-                if len(w) >= 5:
-                    # Check for close matches (e.g., "pokiddo" vs "pokkido")
-                    for text_word in re.findall(r'[a-zA-Z]{4,}', combined):
-                        if SequenceMatcher(None, w, text_word).ratio() > 0.7:
-                            matched = True
-                            break
-                    if matched:
-                        break
-
-        if matched:
+        # Include only if this ship-to is the best match (or tied for best)
+        if my_score >= best_score:
             relevant.append(m)
             if m.get("order_group"):
                 relevant_groups.add(m["order_group"])
@@ -270,34 +318,36 @@ def find_relevant_messages(scenario, target_ship_to):
             if m not in relevant and m.get("order_group") in relevant_groups:
                 relevant.append(m)
 
-    # If no location-specific messages found, check if messages have NO location
-    # at all (all messages go to all locations)
+    # Fallback when exclusive routing found nothing for this ship-to
     if not relevant:
-        has_any_location = False
+        # Case 1: Shared geography removed all distinctive keywords for this ship-to
+        # but OTHER ship-tos still have keywords → this ship-to is indistinguishable
+        # from all messages → skip (e.g., S10 L.PAREL where "parel" is in every msg)
+        if shared_words and not target_words:
+            other_have_kw = any(
+                kw_set for st, kw_set in all_ship_keywords.items()
+                if st != target_ship_to and kw_set
+            )
+            if other_have_kw:
+                return []  # Skip — this ship-to lost all keywords to shared geography
+
+        # Case 2: Send only UNASSIGNED messages (those that don't clearly belong
+        # to another ship-to). This prevents cross-contamination while still
+        # capturing orders that don't mention a location explicitly.
+        unassigned = []
         for m in order_msgs:
-            loc = m.get("location", "")
-            msg_text = m.get("text", "")
-            # Check if any message has a location reference
-            if loc and not re.match(r'^order\s+for\s+\d', loc.lower()):
-                has_any_location = True
-                break
-            # Check if message text contains a known ship-to reference
-            for st in ship_tos_in_sap:
-                st_words = [w for w in re.findall(r'[a-zA-Z]{4,}', st.lower())
-                            if w not in {"good", "food", "concept", "hospitality",
-                                         "services", "limited", "entertainment",
-                                         "private", "ltd", "llp"}]
-                if any(w in msg_text.lower() for w in st_words if len(w) >= 5):
-                    has_any_location = True
-                    break
+            scores = {}
+            for st, kw in all_ship_keywords.items():
+                scores[st] = _msg_match_score(m, kw)
+            best = max(scores.values()) if scores else 0
+            if best <= 0:
+                unassigned.append(m)  # No ship-to claimed this message
 
-        if not has_any_location:
-            # No messages have any location reference — send all to all
+        if unassigned:
+            relevant = unassigned
+        else:
+            # All messages are assigned to other ship-tos → send all as last resort
             relevant = order_msgs
-
-    # Fallback: if still nothing, send first 2 messages
-    if not relevant:
-        relevant = order_msgs[:2]
 
     return relevant
 
