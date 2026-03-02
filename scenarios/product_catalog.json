@@ -969,7 +969,13 @@
     "group": "READY TO COOK FROZEN",
     "uom": "PCS",
     "pack_size": 32,
-    "unit_weight_kg": 0.3
+    "unit_weight_kg": 0.3,
+    "aliases": [
+      "lachha paratha",
+      "laccha paratha",
+      "lachha phartha",
+      "laccha phartha"
+    ]
   },
   {
     "item_code": "S11IP05F06MAL001",
@@ -2211,7 +2217,12 @@
     "group": "READY TO COOK FROZEN",
     "uom": "PCS",
     "pack_size": 8,
-    "unit_weight_kg": 1.0
+    "unit_weight_kg": 1.0,
+    "aliases": [
+      "mini samosa",
+      "mini punjabi samosa",
+      "punjabi samosa"
+    ]
   },
   {
     "item_code": "H13IA01I15NOO001",
@@ -8637,7 +8648,12 @@
     "group": "DAIRY PRODUCTS",
     "uom": "PCS",
     "pack_size": 48,
-    "unit_weight_kg": 0.4
+    "unit_weight_kg": 0.4,
+    "aliases": [
+      "milk maid",
+      "milkmaid",
+      "condensed milk"
+    ]
   },
   {
     "item_code": "I02IP09P13FUS001",
@@ -8700,7 +8716,15 @@
     "group": "CREAM SUB.",
     "uom": "PCS",
     "pack_size": 12,
-    "unit_weight_kg": 1.0
+    "unit_weight_kg": 1.0,
+    "aliases": [
+      "iris cream",
+      "irish cream",
+      "irish whip cream",
+      "whip cream",
+      "whipping cream",
+      "pillsbury cream"
+    ]
   },
   {
     "item_code": "G01IC01P06LAV001",
@@ -8934,7 +8958,12 @@
     "group": "BEVERAGES",
     "uom": "PCS",
     "pack_size": 24,
-    "unit_weight_kg": 0.25
+    "unit_weight_kg": 0.25,
+    "aliases": [
+      "tonic water",
+      "tonik water",
+      "tonic"
+    ]
   },
   {
     "item_code": "T28IC03S09SPR005",

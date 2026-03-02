@@ -81,6 +81,12 @@ def item_in_messages(item_desc, item_code, all_msg_text):
     """
     msg_lower = all_msg_text.lower()
     msg_words = set(re.findall(r'[a-zA-Z]{3,}', msg_lower))
+
+    # Check catalog aliases first — if any alias phrase appears in messages, it's a match
+    cat_item = CATALOG_BY_CODE.get(item_code, {})
+    for alias in cat_item.get("aliases", []):
+        if alias.lower() in msg_lower:
+            return True
     msg_lines = [line.strip().lower() for line in all_msg_text.split('\n')
                  if line.strip()]
 
@@ -426,6 +432,12 @@ QUANTITY CONVERSION RULES (customers speak in cases/kg/box, SAP records in PCS):
     Example: "15 pkt" = 15 PCS.
   IMPORTANT: "block" means individual units (e.g. ice cream blocks). 1 block = 1 PCS always.
 
+QUANTITY CONFIRMATION (IMPORTANT):
+  When a customer uses box/case/kg units, ALWAYS confirm the converted quantity back:
+    Customer: "2 box amul fresh cream"
+    You: "2 boxes of Amul Cream (1 Ltr) = 24 pcs. Correct?"
+  This prevents conversion errors. Wait for their confirmation before finalising.
+
 QUANTITY SANITY CHECK:
 - After converting, compare the result against the historical order patterns below
 - If the converted quantity is more than 3x or less than 0.3x the customer's median for that item, flag it
@@ -435,6 +447,12 @@ PRODUCT MATCHING RULES:
 - Match customer text to the PRODUCT CATALOGUE below using item_code and item_name
 - Do NOT invent item codes — only use codes from the catalogue
 - If a customer's text could match multiple items, pick the closest name match
+- Customers often use informal names, misspellings, or omit brands. Match flexibly:
+  • "Irish cream" → PILLSBURY IRIS CREAM (misspelling)
+  • "tonic water" → SCHWEPPES TONIC WATER (brand omitted)
+  • "milk maid" → NESTLE MILK MAID (brand omitted)
+  • "mini samosa" → INDIBITES-MINI PUNJABI SAMOSA (brand omitted)
+- When catalogue items have aliases listed, check those too
 - If match confidence is low, ASK for clarification rather than guessing
 - If you cannot find a match, say so — do NOT fabricate a product or code
 
@@ -445,9 +463,12 @@ PRODUCT CATALOGUE (items this customer typically orders):
         pack = cat.get("pack_size", 1)
         weight = cat.get("unit_weight_kg", 0)
         median = h.get("median_qty", "N/A")
+        aliases = cat.get("aliases", [])
+        alias_str = f" | aka: {', '.join(aliases)}" if aliases else ""
         prompt += (f"  {h['item_code']} | {h['item_name'][:50]} | "
                    f"PackSize={pack} | UnitWeight={weight}kg | "
-                   f"ordered {h['order_count']}x | typical_qty={median}\n")
+                   f"ordered {h['order_count']}x | typical_qty={median}"
+                   f"{alias_str}\n")
 
     prompt += """
 ORDER CONFIRMATION:
