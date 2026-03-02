@@ -1,0 +1,34 @@
+{
+  "client_id": "ACS",
+  "client_name": "ACS (Arvind/Aravind Snacks)",
+  "industry": "FMCG / Snacks Manufacturing",
+  "region": "India - Tamil Nadu",
+  "erp_system": "unknown",
+  "erp_config": {
+    "type": "tbd",
+    "service_layer_url": "",
+    "company_db": "",
+    "credentials_env_var": "ACS_ERP_CREDENTIALS"
+  },
+  "whatsapp_config": {
+    "order_format": "text",
+    "languages": ["Tamil", "English", "Tanglish"],
+    "group_based_ordering": true
+  },
+  "product_catalog": {
+    "source": "local_file",
+    "local_fallback": "../data/",
+    "item_group_field": "",
+    "matching_strategy": "fuzzy"
+  },
+  "customer_identification": {
+    "method": "whatsapp_phone_number",
+    "fallback": "group_name_mapping"
+  },
+  "features": {
+    "auto_confirm_orders": false,
+    "human_review_threshold": 0.7,
+    "voice_note_support": false,
+    "image_ocr_support": false
+  }
+}
