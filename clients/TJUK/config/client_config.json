@@ -18,8 +18,18 @@
   "product_catalog": {
     "source": "sap_b1",
     "local_fallback": "../data/Product master_mar.xlsx",
-    "item_group_field": "ItmsGrpCod",
-    "matching_strategy": "fuzzy"
+    "item_group_field": "ItmsGrpNam",
+    "matching_strategy": "fuzzy",
+    "columns": {
+      "item_code": "ItemCode",
+      "item_name": "ItemName",
+      "foreign_name": "FrgnName",
+      "brand": "U_BND",
+      "flavor": "U_FLAVOR",
+      "group_name": "ItmsGrpNam",
+      "sales_uom": "SalUnitMsr",
+      "inventory_uom": "InvntryUom"
+    }
   },
   "customer_identification": {
     "method": "whatsapp_phone_number",

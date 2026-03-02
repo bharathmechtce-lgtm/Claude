@@ -19,7 +19,8 @@
     "source": "erp | local_file",
     "local_fallback": "../data/product_master.xlsx",
     "item_group_field": "",
-    "matching_strategy": "fuzzy | exact"
+    "matching_strategy": "fuzzy | exact",
+    "columns": {}
   },
   "customer_identification": {
     "method": "whatsapp_phone_number",
