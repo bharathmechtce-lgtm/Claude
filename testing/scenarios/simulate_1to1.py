@@ -26,7 +26,6 @@ import time
 import requests
 import pandas as pd
 from datetime import datetime
-from difflib import SequenceMatcher
 
 # ============================================================
 # CONFIG
@@ -34,6 +33,12 @@ from difflib import SequenceMatcher
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(os.path.dirname(SCRIPT_DIR), "TJUK Other files")
 PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
+
+# Shared modules
+REPO_ROOT = os.path.dirname(os.path.dirname(SCRIPT_DIR))
+sys.path.insert(0, REPO_ROOT)
+from src.core.prompts import build_system_prompt as _build_shared_prompt, EXTRACTION_PROMPT
+from testing.eval.scorer_utils import extract_json, score_order, filter_testable_items
 SCENARIOS_PATH = os.path.join(SCRIPT_DIR, "test_scenarios.json")
 
 # Load .env from project root
@@ -110,95 +115,15 @@ def prompt_input(text, default=None):
 # CONVERSATIONAL SYSTEM PROMPT
 # ============================================================
 def build_system_prompt(scenario):
-    """Build the system prompt for the conversational bot."""
-    card_codes = ", ".join(scenario["card_codes"])
-    card_names = ", ".join(scenario["card_names"])
-    ship_addresses = scenario["ship_to_addresses"]
-
-    # Build product catalog section (only top items by history)
-    hist_items = {h["item_code"] for h in scenario["historical_patterns"]}
-
-    prompt = f"""You are a WhatsApp order assistant for TJUK, a food distribution company in Mumbai.
-You are chatting 1-on-1 with a customer via WhatsApp. Be helpful, concise, and natural.
-
-LANGUAGE RULES:
-- Customers may write in English, Hindi, Marathi, Gujarati, or Hinglish (mixed Hindi-English).
-  Understand ALL of these languages.
-- Reply in the SAME language the customer uses. If they write in Hindi, reply in Hindi.
-  If they mix Hindi and English, reply in Hinglish. Default to English if unclear.
-- NEVER reply in Arabic or any non-Indian language. This is a Mumbai-based business —
-  the languages are English, Hindi, Marathi, Gujarati, and Hinglish only.
-
-CUSTOMER CONTEXT:
-  Customer: {card_codes} — {card_names}
-  Ship-to Addresses:
-"""
-    for addr in ship_addresses:
-        prompt += f"    - {addr}\n"
-
-    prompt += """
-YOUR BEHAVIOR:
-1. When the customer sends an order, acknowledge it naturally ("Got it!" / "Noted!" etc.)
-2. Read the items and quantities they mention — confirm what you understood
-3. If location/outlet is missing, ask for it
-4. If a product name is ambiguous, ask for clarification
-5. Handle "add" messages by merging into the current order
-6. Handle "cancel" / "remove" messages by updating the order
-7. Keep a RUNNING ORDER in your head — after each interaction, you know the full order state
-8. Be conversational but efficient — these are busy restaurant/hotel managers
-
-QUANTITY CONVERSION RULES (customers speak in cases/kg, SAP records in PCS):
-  CASE/BOX: "X case" → quantity = X × PackSize (from catalogue)
-  KG: "X kg" → quantity = X ÷ UnitWeight (from catalogue)
-  DIRECT: "X pcs/btl/pkt/nos" → quantity = X PCS
-
-CRITICAL: Keep track of the cumulative order. When asked to summarize or when you
-sense the order is complete, list all items with converted quantities.
-
-"""
-    # Add historical patterns (what this customer typically orders)
-    prompt += "HISTORICAL ORDER PATTERNS (what this customer typically orders):\n"
-    for h in scenario["historical_patterns"][:20]:
-        prompt += (f"  {h['item_code']} | {h['item_name'][:45]} | "
-                   f"ordered {h['order_count']}x | typical qty: {h['min_qty']:.0f}-{h['max_qty']:.0f}\n")
-
-    prompt += "\nRespond naturally as a WhatsApp assistant. Keep responses SHORT (2-4 lines max).\n"
-    prompt += "Do NOT output JSON unless specifically asked. Just chat naturally.\n"
-
-    return prompt
-
-
-# ============================================================
-# EXTRACTION PROMPT (asked at the end to get structured output)
-# ============================================================
-EXTRACTION_PROMPT = """Now please output the FINAL complete order as structured JSON.
-Include ALL items from the entire conversation (including additions, minus cancellations).
-
-Output ONLY this JSON format:
-{
-  "orders": [
-    {
-      "ship_to": "LOCATION NAME or DEFAULT",
-      "lines": [
-        {
-          "item_code": "BEST_MATCH_ITEM_CODE or UNKNOWN",
-          "item_name": "MATCHED_ITEM_NAME",
-          "quantity": 72,
-          "uom": "PCS",
-          "original_text": "what customer wrote",
-          "conversion_applied": "3 case × 24 pcs/case = 72 PCS"
-        }
-      ]
-    }
-  ]
-}
-
-Rules:
-- ALL quantities must be in PCS after conversion
-- Match products to the catalogue using fuzzy matching
-- If you can't match, use item_code "UNKNOWN"
-- Include conversion notes showing your math
-"""
+    """Build the system prompt using the shared prompt builder."""
+    return _build_shared_prompt(
+        customer_context={
+            "card_codes": scenario["card_codes"],
+            "card_names": scenario["card_names"],
+            "ship_to_addresses": scenario["ship_to_addresses"],
+        },
+        historical_patterns=scenario["historical_patterns"],
+    )
 
 
 # ============================================================
@@ -242,158 +167,11 @@ def call_llm(messages, system_prompt, model=DEFAULT_MODEL):
         return f"[EXCEPTION: {str(e)[:200]}]", 0, 0
 
 
-# ============================================================
-# SAP TRUTH COMPARISON
-# ============================================================
-def fuzzy_match(s1, s2):
-    return SequenceMatcher(None, s1.lower(), s2.lower()).ratio()
-
-
-def extract_json_from_text(text):
-    """Extract JSON from model response."""
-    if not text:
-        return None
-    match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', text, re.DOTALL)
-    if match:
-        try:
-            return json.loads(match.group(1))
-        except json.JSONDecodeError:
-            pass
-    start = text.find('{')
-    if start != -1:
-        depth = 0
-        for i in range(start, len(text)):
-            if text[i] == '{':
-                depth += 1
-            elif text[i] == '}':
-                depth -= 1
-                if depth == 0:
-                    try:
-                        return json.loads(text[start:i + 1])
-                    except json.JSONDecodeError:
-                        pass
-                    break
-    return None
-
-
-def compare_with_sap_truth(llm_json, sap_truth):
-    """Compare LLM extracted order against SAP ground truth."""
-    if not llm_json or "orders" not in llm_json:
-        return {
-            "matched": 0, "total_sap": len(sap_truth), "total_llm": 0,
-            "qty_correct": 0, "extra": 0, "missed": len(sap_truth),
-            "details": [],
-        }
-
-    # Flatten LLM lines
-    llm_lines = []
-    for order in llm_json.get("orders", []):
-        ship_to = order.get("ship_to", "DEFAULT")
-        for line in order.get("lines", []):
-            llm_lines.append({
-                "item_code": line.get("item_code", "UNKNOWN"),
-                "item_name": line.get("item_name", ""),
-                "quantity": line.get("quantity", 0),
-                "ship_to": ship_to,
-                "original_text": line.get("original_text", ""),
-                "conversion": line.get("conversion_applied", ""),
-            })
-
-    # Match against SAP
-    matched_sap = set()
-    details = []
-    qty_correct = 0
-
-    for ll in llm_lines:
-        best_idx = None
-        best_score = 0
-
-        for i, st in enumerate(sap_truth):
-            if i in matched_sap:
-                continue
-            if ll["item_code"] == st["item_code"]:
-                score = 1.0
-            else:
-                score = fuzzy_match(ll.get("item_name", ""), st["description"])
-            if score > best_score:
-                best_score = score
-                best_idx = i
-
-        if best_idx is not None and best_score >= 0.4:
-            matched_sap.add(best_idx)
-            st = sap_truth[best_idx]
-            try:
-                llm_qty = float(ll["quantity"])
-            except (ValueError, TypeError):
-                llm_qty = 0
-
-            sap_qty = float(st["quantity"])
-            qty_match = False
-            if sap_qty > 0:
-                diff_pct = abs(llm_qty - sap_qty) / sap_qty
-                qty_match = diff_pct <= 0.05
-            elif abs(llm_qty - sap_qty) < 0.01:
-                qty_match = True
-
-            if qty_match:
-                qty_correct += 1
-
-            details.append({
-                "status": "MATCH" if qty_match else "QTY_MISMATCH",
-                "llm_item": ll["item_name"],
-                "llm_code": ll["item_code"],
-                "llm_qty": llm_qty,
-                "sap_item": st["description"],
-                "sap_code": st["item_code"],
-                "sap_qty": sap_qty,
-                "conversion": ll.get("conversion", ""),
-                "match_score": best_score,
-            })
-        else:
-            details.append({
-                "status": "EXTRA",
-                "llm_item": ll["item_name"],
-                "llm_code": ll["item_code"],
-                "llm_qty": ll.get("quantity", 0),
-                "sap_item": "-",
-                "sap_code": "-",
-                "sap_qty": 0,
-                "conversion": ll.get("conversion", ""),
-                "match_score": best_score if best_idx is not None else 0,
-            })
-
-    # Missed SAP items
-    for i, st in enumerate(sap_truth):
-        if i not in matched_sap:
-            details.append({
-                "status": "MISSED",
-                "llm_item": "-",
-                "llm_code": "-",
-                "llm_qty": 0,
-                "sap_item": st["description"],
-                "sap_code": st["item_code"],
-                "sap_qty": st["quantity"],
-                "conversion": "",
-                "match_score": 0,
-            })
-
-    matched_count = len(matched_sap)
-    return {
-        "matched": matched_count,
-        "total_sap": len(sap_truth),
-        "total_llm": len(llm_lines),
-        "qty_correct": qty_correct,
-        "extra": len(llm_lines) - matched_count,
-        "missed": len(sap_truth) - matched_count,
-        "details": details,
-    }
-
-
 def print_comparison(result):
     """Print a formatted comparison table."""
     header("FINAL COMPARISON: LLM vs SAP Ground Truth")
 
-    total_sap = result["total_sap"]
+    total_sap = result["target_count"]
     matched = result["matched"]
     qty_correct = result["qty_correct"]
     extra = result["extra"]
@@ -757,7 +535,7 @@ def run_simulation(scenario):
           else f"  {C_DIM}{extraction_response}{C_RESET}")
 
     # Parse JSON
-    llm_json = extract_json_from_text(extraction_response)
+    llm_json = extract_json(extraction_response)
     if not llm_json:
         print(f"\n  {C_RED}Failed to parse JSON from LLM response!{C_RESET}")
         print(f"  {C_DIM}Raw response saved for debugging.{C_RESET}")
@@ -771,7 +549,13 @@ def run_simulation(scenario):
               f"{len(llm_json.get('orders', []))} order(s){C_RESET}")
 
     # Step 6: Compare with SAP truth
-    result = compare_with_sap_truth(llm_json, s["sap_truth"])
+    # Collect customer message text for filtering
+    all_customer_text = "\n".join(
+        m["text"] for conv in s["conversations_1to1"]
+        for m in conv["messages"] if m["role"] == "customer"
+    )
+    testable_truth = filter_testable_items(s["sap_truth"], all_customer_text)
+    result = score_order(llm_json, testable_truth)
     print_comparison(result)
 
     # Cost summary

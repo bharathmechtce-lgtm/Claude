@@ -14,15 +14,19 @@ Only Haiku API calls are made for the bot.
 
 import json
 import os
-import re
 import sys
 import time
 import requests
 from datetime import datetime
-from difflib import SequenceMatcher
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
+
+# Shared modules
+REPO_ROOT = os.path.dirname(os.path.dirname(SCRIPT_DIR))
+sys.path.insert(0, REPO_ROOT)
+from src.core.prompts import build_system_prompt as _build_shared_prompt, EXTRACTION_PROMPT
+from testing.eval.scorer_utils import extract_json, score_order, auto_respond
 
 # Load .env
 env_path = os.path.join(PROJECT_ROOT, ".env")
@@ -100,246 +104,18 @@ def call_haiku(messages, system_prompt):
     return "[FAILED after retries]", 0, 0
 
 
-# ── Build bot system prompt ──
+# ── Build bot system prompt (thin wrapper around shared builder) ──
 def build_bot_system_prompt(scenario, target_ship_to):
-    card_codes = ", ".join(scenario["card_codes"])
-    card_names = ", ".join(scenario["card_names"])
-    ship_addresses = scenario["ship_to_addresses"]
-
-    prompt = f"""You are a WhatsApp order assistant for TJUK, a food distribution company in Mumbai.
-You are chatting 1-on-1 with a customer via WhatsApp. Be helpful, concise, and natural.
-
-LANGUAGE RULES:
-- Customers may write in English, Hindi, Marathi, Gujarati, or Hinglish (mixed Hindi-English).
-  Understand ALL of these languages.
-- Reply in the SAME language the customer uses. If they write in Hindi, reply in Hindi.
-  If they mix Hindi and English, reply in Hinglish. Default to English if unclear.
-- NEVER reply in Arabic or any non-Indian language. This is a Mumbai-based business —
-  the languages are English, Hindi, Marathi, Gujarati, and Hinglish only.
-
-CUSTOMER CONTEXT:
-  Customer: {card_codes} — {card_names}
-  Ship-to Addresses:
-"""
-    for addr in ship_addresses:
-        prompt += f"    - {addr}\n"
-
-    prompt += """
-YOUR BEHAVIOR:
-1. When the customer first messages you with their name, WELCOME them warmly
-2. If they have more than one ship-to address, ASK which location this order is for
-3. Read the items and quantities they mention — confirm what you understood
-4. If a product name is ambiguous, ask for clarification with options
-5. Handle "add" messages by merging into the current order
-6. Handle "cancel" / "remove" messages by updating the order
-7. Keep a RUNNING ORDER — after each interaction, you know the full order state
-8. Be conversational but efficient — these are busy restaurant/hotel managers
-
-ANTI-HALLUCINATION RULES (CRITICAL):
-- ONLY include items the customer EXPLICITLY mentioned
-- NEVER infer, suggest, or add items not asked for
-- If in doubt, ASK rather than guess
-
-QUANTITY CONVERSION RULES (customers speak in cases/kg/box, SAP records in PCS):
-  CASE/BOX: "X case" or "X box" → quantity = X × PackSize (from catalogue)
-  KG: "X kg" → quantity = X ÷ UnitWeight (from catalogue)
-  DIRECT: "X pcs/btl/pkt/nos/block/bulk/tin/bag" → quantity = X PCS
-  IMPORTANT: "block" means individual units. 1 block = 1 PCS always.
-
-PRODUCT MATCHING RULES:
-- Match customer text to the PRODUCT CATALOGUE below
-- Do NOT invent item codes
-- If match confidence is low, ASK for clarification
-- If you cannot find a match, say so
-- GENERIC TERMS: When a customer uses a generic term WITHOUT specifying a brand, do NOT
-  default to one specific brand. Instead, ask which product they want by listing the
-  matching options from the catalogue. Use context to narrow down sensibly:
-  - "water bottle" / "pani" → list water/sparkling water brands (NOT sauce bottles)
-  - "soda" → list soda brands only
-  - "bottle" alone → use surrounding context to decide category. If ambiguous, ask.
-
-PRODUCT CATALOGUE (items this customer typically orders):
-"""
-    for h in scenario.get("historical_patterns", [])[:40]:
-        cat = CATALOG_BY_CODE.get(h["item_code"], {})
-        pack = cat.get("pack_size", 1)
-        weight = cat.get("unit_weight_kg", 0)
-        median = h.get("median_qty", "N/A")
-        prompt += (f"  {h['item_code']} | {h['item_name'][:50]} | "
-                   f"PackSize={pack} | UnitWeight={weight}kg | "
-                   f"ordered {h['order_count']}x | typical_qty={median}\n")
-
-    prompt += """
-ORDER CONFIRMATION:
-- When the customer seems done, show a COMPLETE ORDER SUMMARY
-- Format: numbered list with item name, quantity (in PCS), and delivery location
-- Ask: "Please confirm this order, or let me know if any changes are needed"
-
-Respond naturally as a WhatsApp assistant. Keep responses SHORT (2-4 lines max).
-Do NOT output JSON unless specifically asked.
-"""
-    return prompt
-
-
-# ── JSON extraction ──
-EXTRACTION_PROMPT = """Please output the COMPLETE order as structured JSON.
-Include ALL items from the conversation (additions included, cancellations removed).
-
-CRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add extras.
-
-Output ONLY this JSON:
-{
-  "orders": [
-    {
-      "ship_to": "EXACT ADDRESS NAME",
-      "lines": [
-        {
-          "item_code": "ITEM_CODE_FROM_CATALOGUE",
-          "item_name": "MATCHED_CATALOGUE_NAME",
-          "quantity": 72,
-          "uom": "PCS",
-          "original_text": "what customer wrote",
-          "conversion_applied": "3 case x 24 pcs/case = 72 PCS"
-        }
-      ]
-    }
-  ]
-}
-
-Rules:
-- ALL quantities in PCS after conversion
-- Use PackSize for case/box: qty = X x PackSize
-- Use UnitWeight for kg: qty = X / UnitWeight
-- For pcs/btl/pkt/nos/block: use number directly
-- Match to catalogue — do NOT invent codes
-- NEVER include items not ordered
-"""
-
-
-def extract_json(text):
-    if not text:
-        return None
-    match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', text, re.DOTALL)
-    if match:
-        try:
-            return json.loads(match.group(1))
-        except json.JSONDecodeError:
-            pass
-    start = text.find('{')
-    if start != -1:
-        depth = 0
-        for i in range(start, len(text)):
-            if text[i] == '{':
-                depth += 1
-            elif text[i] == '}':
-                depth -= 1
-                if depth == 0:
-                    try:
-                        return json.loads(text[start:i + 1])
-                    except json.JSONDecodeError:
-                        pass
-                    break
-    return None
-
-
-# ── Scoring ──
-def fuzzy(a, b):
-    return SequenceMatcher(None, a.lower(), b.lower()).ratio()
-
-
-def score_order(llm_json, target_items, target_ship_to):
-    result = {
-        "target_count": len(target_items),
-        "llm_count": 0, "matched": 0, "qty_correct": 0,
-        "extra": 0, "missed": 0, "ship_to_correct": False,
-        "complete_order": False, "details": [],
-    }
-    if not llm_json or "orders" not in llm_json:
-        result["missed"] = len(target_items)
-        return result
-
-    llm_lines = []
-    llm_ship_tos = []
-    for order in llm_json.get("orders", []):
-        ship = order.get("ship_to", "")
-        llm_ship_tos.append(ship)
-        for line in order.get("lines", []):
-            llm_lines.append({
-                "item_code": line.get("item_code", "UNKNOWN"),
-                "item_name": line.get("item_name", ""),
-                "quantity": line.get("quantity", 0),
-            })
-    result["llm_count"] = len(llm_lines)
-
-    for st in llm_ship_tos:
-        if fuzzy(st, target_ship_to) >= 0.5:
-            result["ship_to_correct"] = True
-            break
-
-    all_pairs = []
-    for li, ll in enumerate(llm_lines):
-        for ti, tgt in enumerate(target_items):
-            if ll["item_code"] and ll["item_code"] != "UNKNOWN" and \
-               ll["item_code"] == tgt["item_code"]:
-                score = 1.0
-            else:
-                score = max(
-                    fuzzy(ll.get("item_name", ""), tgt["description"]),
-                    fuzzy(ll.get("item_code", ""), tgt["item_code"]),
-                )
-            all_pairs.append((score, li, ti))
-
-    all_pairs.sort(key=lambda x: -x[0])
-    matched_target = set()
-    matched_llm = set()
-
-    for score, li, ti in all_pairs:
-        if li in matched_llm or ti in matched_target:
-            continue
-        if score < 0.4:
-            continue
-        matched_target.add(ti)
-        matched_llm.add(li)
-        ll = llm_lines[li]
-        tgt = target_items[ti]
-        try:
-            llm_qty = float(ll["quantity"])
-        except (ValueError, TypeError):
-            llm_qty = 0
-        sap_qty = float(tgt["quantity"])
-        qty_ok = abs(llm_qty - sap_qty) / sap_qty <= 0.10 if sap_qty > 0 else abs(llm_qty - sap_qty) < 0.01
-        if qty_ok:
-            result["qty_correct"] += 1
-        result["details"].append({
-            "status": "MATCH" if qty_ok else "QTY_MISMATCH",
-            "llm_item": ll["item_name"][:50], "llm_code": ll["item_code"],
-            "llm_qty": llm_qty, "sap_item": tgt["description"][:50],
-            "sap_code": tgt["item_code"], "sap_qty": sap_qty,
-        })
-
-    result["matched"] = len(matched_target)
-    for li, ll in enumerate(llm_lines):
-        if li not in matched_llm:
-            result["extra"] += 1
-            result["details"].append({
-                "status": "EXTRA", "llm_item": ll["item_name"][:50],
-                "llm_code": ll["item_code"], "llm_qty": ll.get("quantity", 0),
-            })
-    for ti, tgt in enumerate(target_items):
-        if ti not in matched_target:
-            result["missed"] += 1
-            result["details"].append({
-                "status": "MISSED", "sap_item": tgt["description"][:50],
-                "sap_code": tgt["item_code"], "sap_qty": tgt["quantity"],
-            })
-
-    result["complete_order"] = (
-        result["matched"] == result["target_count"]
-        and result["qty_correct"] == result["matched"]
-        and result["extra"] == 0
-        and result["ship_to_correct"]
+    """Build the bot system prompt using the shared prompt builder."""
+    return _build_shared_prompt(
+        customer_context={
+            "card_codes": scenario["card_codes"],
+            "card_names": scenario["card_names"],
+            "ship_to_addresses": scenario["ship_to_addresses"],
+        },
+        product_catalog=scenario.get("historical_patterns", []),
+        catalog_by_code=CATALOG_BY_CODE,
     )
-    return result
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -574,35 +350,27 @@ def run_one_order(order_def):
         conv_log.append({"step": step_label, "role": "BOT", "text": resp})
         return resp
 
-    # ── STEP 1: Introduction ──
+    # Step 1: Send introduction
     bot_resp = bot_respond(order_def["step1"], "1-intro")
 
-    # ── STEP 2: Location ──
+    # Step 2: Location (if multi-address)
     if order_def["step2"]:
+        # Bot might ask for location in step 1 response, or we proactively provide it
         bot_resp = bot_respond(order_def["step2"], "2-location")
-        # If bot double-checks, confirm again
-        if "?" in bot_resp and order_def["step2"]:
-            bot_resp = bot_respond(f"Yes, {order_def['step2']} confirmed", "2b-confirm")
 
-    # ── STEP 3: Order ──
+    # Step 3: Send the order
     bot_resp = bot_respond(order_def["step3"], "3-order")
 
-    # Handle follow-up if needed
+    # Follow-up if provided
     if order_def.get("step3_followup"):
         bot_resp = bot_respond(order_def["step3_followup"], "3b-followup")
 
-    # If bot asks clarification, answer
-    if "?" in bot_resp:
-        bot_resp = bot_respond("That's correct, please proceed", "3c-clarify")
-
-    # Request summary
-    bot_resp = bot_respond("That's it. Please show complete order summary.", "3d-summary")
-
-    # ── STEP 4: Confirm ──
-    if order_def["step4_confirm"]:
-        bot_resp = bot_respond("Confirmed, looks good", "4-confirm")
-    else:
-        bot_resp = bot_respond("Confirmed", "4-confirm")
+    # Natural conversation loop — respond to bot's questions
+    for turn in range(6):
+        response_text, should_extract = auto_respond(bot_resp, ship_to, turn)
+        bot_resp = bot_respond(response_text, f"4-conv-{turn}")
+        if should_extract:
+            break
 
     # ── EXTRACTION ──
     extraction_resp = bot_respond(EXTRACTION_PROMPT, "5-extract")

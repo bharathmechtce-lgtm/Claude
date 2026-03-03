@@ -19,6 +19,15 @@ from collections import defaultdict
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
 
+# Shared modules
+REPO_ROOT = os.path.dirname(os.path.dirname(SCRIPT_DIR))
+sys.path.insert(0, REPO_ROOT)
+from src.core.prompts import build_system_prompt as _build_shared_prompt, EXTRACTION_PROMPT
+from testing.eval.scorer_utils import (
+    extract_json, score_order, filter_testable_items,
+    item_mentioned_in_messages, fuzzy_match, auto_respond,
+)
+
 # Load .env
 env_path = os.path.join(PROJECT_ROOT, ".env")
 if os.path.exists(env_path):
@@ -58,150 +67,6 @@ SIZE_WORDS = {
     "pcs", "gms", "bag", "box", "nos", "pkt", "btl", "can", "jar",
     "pouch", "tin", "the", "and", "for", "with", "inch",
 }
-
-
-def _fuzzy_word_in_text(word, text_words):
-    """Check if word appears in text_words with fuzzy matching for common typos."""
-    if word in text_words:
-        return True
-    # Common Indian English spelling variations
-    for tw in text_words:
-        if len(tw) >= 4 and len(word) >= 4:
-            if SequenceMatcher(None, word, tw).ratio() > 0.75:
-                return True
-    return False
-
-
-# ── Filter SAP items to only those mentioned in messages ──
-def item_in_messages(item_desc, item_code, all_msg_text):
-    """Check if a SAP item has textual basis in customer messages.
-
-    Lenient: prefer false positives (keeping unreachable items) over
-    false negatives (filtering out items the customer did order).
-    """
-    msg_lower = all_msg_text.lower()
-    msg_words = set(re.findall(r'[a-zA-Z]{3,}', msg_lower))
-    msg_lines = [line.strip().lower() for line in all_msg_text.split('\n')
-                 if line.strip()]
-
-    # Extract meaningful words from SAP item description
-    desc_words = re.findall(r'[a-zA-Z]{3,}', item_desc.lower())
-    desc_words = [w for w in desc_words if w not in SIZE_WORDS]
-
-    if not desc_words:
-        return False
-
-    # Split into brand words and product words
-    known_brands = {
-        "amul", "pillsbury", "baskin", "davinci", "tulua", "sankalp", "gooddot",
-        "kissan", "maggi", "nescafe", "hershey", "hersheys", "mccain", "mccains",
-        "gowardhan", "dlecta", "delecta", "indibites", "manama", "perrier",
-        "veeba", "signature", "sugam", "switz", "mother", "dairy",
-        "tata", "knorr", "solas", "swiss", "sprite", "coke", "kinley",
-        "real", "dabur", "epigamia", "fiamma", "nestle", "plant", "power",
-        "schweppes", "golden", "crown",
-    }
-
-    brand_words = [w for w in desc_words if w in known_brands]
-    product_words = [w for w in desc_words if w not in known_brands]
-
-    # Totally generic words that match too broadly on their own
-    very_generic = {"free", "low", "fat", "cut", "mix", "plus", "pure",
-                    "bulk", "block", "hot", "red", "bag", "raw"}
-
-    # Strategy 1: Brand match with lenient product check
-    # If the customer mentions the brand, the item is likely relevant
-    if brand_words:
-        brand_in_msg = any(_fuzzy_word_in_text(bw, msg_words) for bw in brand_words)
-        if brand_in_msg:
-            # Brand-only items (Sprite, Coke, etc.) — brand match is enough
-            if len(product_words) <= 2:
-                return True
-            # Brand + at least 1 non-generic product word matches
-            if any(_fuzzy_word_in_text(pw, msg_words) for pw in product_words
-                   if pw not in very_generic and len(pw) >= 4):
-                return True
-
-    # Strategy 2: Line-level match
-    for line in msg_lines:
-        line_words = set(re.findall(r'[a-zA-Z]{3,}', line))
-        if not line_words:
-            continue
-
-        prod_matches = sum(1 for w in product_words
-                           if w not in very_generic
-                           and _fuzzy_word_in_text(w, line_words))
-        brand_matches = sum(1 for w in brand_words
-                            if _fuzzy_word_in_text(w, line_words))
-
-        # Brand + any product word in same line
-        if brand_matches >= 1 and prod_matches >= 1:
-            return True
-
-        # 2+ non-generic product words in same line (no brand needed)
-        if prod_matches >= 2:
-            return True
-
-        # Single distinctive product word (>= 6 chars) in line
-        for w in product_words:
-            if len(w) >= 6 and w not in very_generic:
-                if _fuzzy_word_in_text(w, line_words):
-                    return True
-
-    # Strategy 3: Cross-line brand + product match
-    for bw in brand_words:
-        if _fuzzy_word_in_text(bw, msg_words):
-            for pw in product_words:
-                if len(pw) >= 4 and pw not in very_generic:
-                    if _fuzzy_word_in_text(pw, msg_words):
-                        return True
-
-    # Strategy 4: Product type match for common shorthand
-    # Customers often say "vanilla 12 block" meaning "baskin vanilla"
-    # Match if a distinctive product word appears and it's not too ambiguous
-    product_type_words = {"vanilla", "chocolate", "strawberry", "mango",
-                          "coffee", "butterscotch", "brownie", "waffle",
-                          "tortilla", "paratha", "samosa", "idli", "vada",
-                          "fries", "wedges", "syrup", "cream", "butter",
-                          "cheese", "soda", "juice", "ketchup", "mustard",
-                          "turmeric", "cumin", "coriander", "pepper"}
-    matched_product_types = []
-    for w in product_words:
-        if w in product_type_words and _fuzzy_word_in_text(w, msg_words):
-            matched_product_types.append(w)
-
-    # If a brand is present in messages AND product type matches, it's a match
-    if matched_product_types and brand_words:
-        for bw in brand_words:
-            if _fuzzy_word_in_text(bw, msg_words):
-                return True
-
-    # If 2+ product type words match across the message, likely a match
-    if len(matched_product_types) >= 2:
-        return True
-
-    return False
-
-
-def filter_testable_items(target_items, all_msg_text):
-    """Filter SAP items to only those that appear in customer messages."""
-    testable = []
-    seen_codes = {}  # track item_code -> best match for dedup
-
-    for item in target_items:
-        desc = item.get("description", "")
-        code = item.get("item_code", "")
-
-        if item_in_messages(desc, code, all_msg_text):
-            # Dedup: if same item_code already seen, keep only one
-            if code in seen_codes:
-                # Keep the one with qty closest to what might be in the message
-                # (heuristic: keep the first occurrence)
-                continue
-            seen_codes[code] = len(testable)
-            testable.append(item)
-
-    return testable
 
 
 # Common company/org words to skip when extracting location keywords
@@ -374,146 +239,16 @@ def discover_all_orders():
 
 # ── System prompt ──
 def build_system_prompt(scenario, target_ship_to):
-    card_codes = ", ".join(scenario["card_codes"])
-    card_names = ", ".join(scenario["card_names"])
-    ship_addresses = scenario["ship_to_addresses"]
-
-    prompt = f"""You are a WhatsApp order assistant for TJUK, a food distribution company in Mumbai.
-You are chatting 1-on-1 with a customer via WhatsApp. Be helpful, concise, and natural.
-
-LANGUAGE RULES:
-- Customers may write in English, Hindi, Marathi, Gujarati, or Hinglish (mixed Hindi-English).
-  Understand ALL of these languages.
-- Reply in the SAME language the customer uses. If they write in Hindi, reply in Hindi.
-  If they mix Hindi and English, reply in Hinglish. Default to English if unclear.
-- NEVER reply in Arabic or any non-Indian language. This is a Mumbai-based business —
-  the languages are English, Hindi, Marathi, Gujarati, and Hinglish only.
-
-CUSTOMER CONTEXT:
-  Customer: {card_codes} — {card_names}
-  Ship-to Addresses:
-"""
-    for addr in ship_addresses:
-        prompt += f"    - {addr}\n"
-
-    prompt += """
-YOUR BEHAVIOR:
-1. When the customer sends an order, acknowledge it naturally ("Got it!" / "Noted!" etc.)
-2. Read the items and quantities they mention — confirm what you understood
-3. If location/outlet is missing, ask for it
-4. If a product name is ambiguous, ask for clarification
-5. Handle "add" messages by merging into the current order
-6. Handle "cancel" / "remove" messages by updating the order
-7. Keep a RUNNING ORDER in your head — after each interaction, you know the full order state
-8. Be conversational but efficient — these are busy restaurant/hotel managers
-
-ANTI-HALLUCINATION RULES (CRITICAL — follow these strictly):
-- ONLY include items the customer EXPLICITLY mentioned or asked for
-- NEVER infer, suggest, or add items the customer did not ask for
-- NEVER add items "they might also need" or "usually ordered together"
-- If the customer says "5kg amul butter" — that is ONE item (amul butter). Do NOT add cheese, ghee, or anything else
-- When extracting the order to JSON, list ONLY the items from the conversation. Zero extras
-- If in doubt whether the customer asked for something, DO NOT include it — ask instead
-- Count your output items against the customer's message. If you have MORE items than the customer mentioned, you are hallucinating — remove the extras
-
-QUANTITY CONVERSION RULES (customers speak in cases/kg/box, SAP records in PCS):
-
-  CASE/BOX: "X case" or "X box" → quantity = X × PackSize (from catalogue)
-    Example: "3 box" of Kinley Soda (PackSize=24) → 3 × 24 = 72 PCS
-    Example: "1 box" of Amul Butter 500GMS (PackSize=20) → 1 × 20 = 20 PCS
-    Example: "1 box" of Dlecta Cream Cheese (PackSize=8) → 1 × 8 = 8 PCS
-
-  KG: "X kg" → quantity = X ÷ UnitWeight (from catalogue)
-    Example: "5 kg" of Amul Butter 500GMS (UnitWeight=0.5kg) → 5 ÷ 0.5 = 10 PCS
-    Example: "3 kg" of Amul Cheese Block 1KG (UnitWeight=1.0kg) → 3 ÷ 1.0 = 3 PCS
-
-  DIRECT (no conversion — just count as PCS):
-    "X pcs/btl/pkt/nos/block/bulk/tin/bag" → quantity = X PCS
-    Example: "24 block" = 24 PCS. Do NOT multiply blocks by pack_size or unit_weight.
-    Example: "12 btl" = 12 PCS. Do NOT multiply bottles by anything.
-    Example: "15 pkt" = 15 PCS.
-  IMPORTANT: "block" means individual units (e.g. ice cream blocks). 1 block = 1 PCS always.
-
-QUANTITY SANITY CHECK:
-- After converting, compare the result against the historical order patterns below
-- If the converted quantity is more than 3x or less than 0.3x the customer's median for that item, flag it
-- For first-time items (no history), accept the quantity as-is
-
-PRODUCT MATCHING RULES:
-- Match customer text to the PRODUCT CATALOGUE below using item_code and item_name
-- Do NOT invent item codes — only use codes from the catalogue
-- If a customer's text could match multiple items, pick the closest name match
-- If match confidence is low, ASK for clarification rather than guessing
-- If you cannot find a match, say so — do NOT fabricate a product or code
-- GENERIC TERMS: When a customer uses a generic term WITHOUT specifying a brand, do NOT
-  default to one specific brand. Instead, ask which product they want by listing the
-  matching options from the catalogue. Use context to narrow down sensibly:
-  - "water bottle" / "pani" → list water/sparkling water brands (NOT sauce bottles)
-  - "soda" → list soda brands only
-  - "juice" → list juice brands only
-  - "bottle" alone → use surrounding context (if ordering drinks, show drink bottles;
-    if ordering sauces, show sauce bottles). If still ambiguous, ask.
-
-PRODUCT CATALOGUE (items this customer typically orders):
-"""
-    for h in scenario.get("historical_patterns", [])[:40]:
-        cat = CATALOG_BY_CODE.get(h["item_code"], {})
-        pack = cat.get("pack_size", 1)
-        weight = cat.get("unit_weight_kg", 0)
-        median = h.get("median_qty", "N/A")
-        prompt += (f"  {h['item_code']} | {h['item_name'][:50]} | "
-                   f"PackSize={pack} | UnitWeight={weight}kg | "
-                   f"ordered {h['order_count']}x | typical_qty={median}\n")
-
-    prompt += """
-ORDER CONFIRMATION:
-- When the customer seems done, show a COMPLETE ORDER SUMMARY
-- Format: numbered list with item name, quantity (in PCS), and delivery location
-- Ask: "Please confirm this order, or let me know if any changes are needed"
-
-Respond naturally as a WhatsApp assistant. Keep responses SHORT (2-4 lines max).
-Do NOT output JSON unless specifically asked.
-"""
-    return prompt
-
-
-EXTRACTION_PROMPT = """Please output the COMPLETE order as structured JSON.
-Include ALL items from the entire conversation (additions included, cancellations removed).
-
-CRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items
-that were not mentioned by the customer. Count the items in your output — they must
-match the number of distinct products the customer asked for. If you have MORE items
-than the customer mentioned, you are hallucinating — remove the extras.
-
-Output ONLY this JSON:
-{
-  "orders": [
-    {
-      "ship_to": "EXACT ADDRESS NAME",
-      "lines": [
-        {
-          "item_code": "ITEM_CODE_FROM_CATALOGUE",
-          "item_name": "MATCHED_CATALOGUE_NAME",
-          "quantity": 72,
-          "uom": "PCS",
-          "original_text": "what customer wrote",
-          "conversion_applied": "3 case × 24 pcs/case = 72 PCS"
-        }
-      ]
-    }
-  ]
-}
-
-Rules:
-- ALL quantities MUST be in PCS after conversion
-- Use PackSize from catalogue for case/box conversion: qty = X × PackSize
-- Use UnitWeight from catalogue for kg conversion: qty = X ÷ UnitWeight
-- For pcs/btl/pkt/nos/block: use the number directly as PCS
-- Match products to the catalogue using item codes — do NOT invent codes
-- Include conversion notes showing your math
-- If you can't match a product, use item_code "UNKNOWN"
-- NEVER include items the customer did not ask for
-"""
+    """Build the system prompt using the shared prompt builder."""
+    return _build_shared_prompt(
+        customer_context={
+            "card_codes": scenario["card_codes"],
+            "card_names": scenario["card_names"],
+            "ship_to_addresses": scenario["ship_to_addresses"],
+        },
+        product_catalog=scenario.get("historical_patterns", []),
+        catalog_by_code=CATALOG_BY_CODE,
+    )
 
 
 # ── API ──
@@ -558,131 +293,6 @@ def call_api(messages, system_prompt):
         except Exception as e:
             return f"[ERROR: {e}]", 0, 0
     return "[FAILED after retries]", 0, 0
-
-
-def extract_json(text):
-    if not text:
-        return None
-    match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', text, re.DOTALL)
-    if match:
-        try:
-            return json.loads(match.group(1))
-        except json.JSONDecodeError:
-            pass
-    start = text.find('{')
-    if start != -1:
-        depth = 0
-        for i in range(start, len(text)):
-            if text[i] == '{':
-                depth += 1
-            elif text[i] == '}':
-                depth -= 1
-                if depth == 0:
-                    try:
-                        return json.loads(text[start:i + 1])
-                    except json.JSONDecodeError:
-                        pass
-                    break
-    return None
-
-
-def fuzzy(a, b):
-    return SequenceMatcher(None, a.lower(), b.lower()).ratio()
-
-
-def score_order(llm_json, target_items, target_ship_to):
-    result = {
-        "target_count": len(target_items),
-        "llm_count": 0, "matched": 0, "qty_correct": 0,
-        "extra": 0, "missed": 0, "ship_to_correct": False,
-        "complete_order": False, "details": [],
-    }
-    if not llm_json or "orders" not in llm_json:
-        result["missed"] = len(target_items)
-        return result
-
-    llm_lines = []
-    llm_ship_tos = []
-    for order in llm_json.get("orders", []):
-        ship = order.get("ship_to", "")
-        llm_ship_tos.append(ship)
-        for line in order.get("lines", []):
-            llm_lines.append({
-                "item_code": line.get("item_code", "UNKNOWN"),
-                "item_name": line.get("item_name", ""),
-                "quantity": line.get("quantity", 0),
-            })
-    result["llm_count"] = len(llm_lines)
-
-    for st in llm_ship_tos:
-        if fuzzy(st, target_ship_to) >= 0.5:
-            result["ship_to_correct"] = True
-            break
-
-    all_pairs = []
-    for li, ll in enumerate(llm_lines):
-        for ti, tgt in enumerate(target_items):
-            if ll["item_code"] and ll["item_code"] != "UNKNOWN" and \
-               ll["item_code"] == tgt["item_code"]:
-                score = 1.0
-            else:
-                score = max(
-                    fuzzy(ll.get("item_name", ""), tgt["description"]),
-                    fuzzy(ll.get("item_code", ""), tgt["item_code"]),
-                )
-            all_pairs.append((score, li, ti))
-
-    all_pairs.sort(key=lambda x: -x[0])
-    matched_target = set()
-    matched_llm = set()
-
-    for score, li, ti in all_pairs:
-        if li in matched_llm or ti in matched_target:
-            continue
-        if score < 0.4:
-            continue
-        matched_target.add(ti)
-        matched_llm.add(li)
-        ll = llm_lines[li]
-        tgt = target_items[ti]
-        try:
-            llm_qty = float(ll["quantity"])
-        except (ValueError, TypeError):
-            llm_qty = 0
-        sap_qty = float(tgt["quantity"])
-        qty_ok = abs(llm_qty - sap_qty) / sap_qty <= 0.10 if sap_qty > 0 else abs(llm_qty - sap_qty) < 0.01
-        if qty_ok:
-            result["qty_correct"] += 1
-        result["details"].append({
-            "status": "MATCH" if qty_ok else "QTY_MISMATCH",
-            "llm_item": ll["item_name"][:50], "llm_code": ll["item_code"],
-            "llm_qty": llm_qty, "sap_item": tgt["description"][:50],
-            "sap_code": tgt["item_code"], "sap_qty": sap_qty,
-        })
-
-    result["matched"] = len(matched_target)
-    for li, ll in enumerate(llm_lines):
-        if li not in matched_llm:
-            result["extra"] += 1
-            result["details"].append({
-                "status": "EXTRA", "llm_item": ll["item_name"][:50],
-                "llm_code": ll["item_code"], "llm_qty": ll.get("quantity", 0),
-            })
-    for ti, tgt in enumerate(target_items):
-        if ti not in matched_target:
-            result["missed"] += 1
-            result["details"].append({
-                "status": "MISSED", "sap_item": tgt["description"][:50],
-                "sap_code": tgt["item_code"], "sap_qty": tgt["quantity"],
-            })
-
-    result["complete_order"] = (
-        result["matched"] == result["target_count"]
-        and result["qty_correct"] == result["matched"]
-        and result["extra"] == 0
-        and result["ship_to_correct"]
-    )
-    return result
 
 
 def run_one(order_info):
@@ -738,13 +348,12 @@ def run_one(order_info):
     # Turn 1: Send order
     bot_resp = send(first_message)
 
-    # Turn 2: Answer questions
-    if "?" in bot_resp:
-        send(f"Ship to: {ship_to}")
-
-    # Turn 2.5: Summary + confirm
-    send("That's it. Please show me the complete order summary for confirmation.")
-    send("Confirmed. Looks good.")
+    # Natural conversation loop — respond to what the bot asks (Fix 4)
+    for turn in range(6):
+        response_text, should_extract = auto_respond(bot_resp, ship_to, turn)
+        bot_resp = send(response_text)
+        if should_extract:
+            break
 
     # Turn 3: Extract JSON
     extraction_resp = send(EXTRACTION_PROMPT)
