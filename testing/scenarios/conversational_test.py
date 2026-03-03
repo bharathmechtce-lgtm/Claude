@@ -189,6 +189,14 @@ def build_system_prompt(scenario, target_ship_to):
     prompt = f"""You are a WhatsApp order assistant for TJUK, a food distribution company in Mumbai.
 You are chatting 1-on-1 with a customer via WhatsApp. Be helpful, concise, and natural.
 
+LANGUAGE RULES:
+- Customers may write in English, Hindi, Marathi, Gujarati, or Hinglish (mixed Hindi-English).
+  Understand ALL of these languages.
+- Reply in the SAME language the customer uses. If they write in Hindi, reply in Hindi.
+  If they mix Hindi and English, reply in Hinglish. Default to English if unclear.
+- NEVER reply in Arabic or any non-Indian language. This is a Mumbai-based business —
+  the languages are English, Hindi, Marathi, Gujarati, and Hinglish only.
+
 CUSTOMER CONTEXT:
   Customer: {card_codes} — {card_names}
   Ship-to Addresses:
@@ -244,6 +252,10 @@ PRODUCT MATCHING RULES:
 - If a customer's text could match multiple items, pick the closest name match
 - If match confidence is low, ASK for clarification rather than guessing
 - If you cannot find a match, say so — do NOT fabricate a product or code
+- GENERIC TERMS: When a customer uses a generic term like "bottle", "water", "soda", "juice" etc.
+  WITHOUT specifying a brand, search ALL matching products in the catalogue — do NOT default to
+  one specific brand (e.g. do NOT assume "water bottle" means Perrier). Instead, ask which
+  product they want by listing the available options from the catalogue.
 
 PRODUCT CATALOGUE (items this customer typically orders):
 """

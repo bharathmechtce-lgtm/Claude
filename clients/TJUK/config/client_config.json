@@ -12,7 +12,7 @@
   },
   "whatsapp_config": {
     "order_format": "text",
-    "languages": ["English", "Hindi", "Hinglish"],
+    "languages": ["English", "Hindi", "Hinglish", "Marathi", "Gujarati"],
     "group_based_ordering": true
   },
   "product_catalog": {
