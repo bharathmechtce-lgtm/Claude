@@ -117,7 +117,7 @@ Claude/
 
 ### A. Created Interactive 1-to-1 Simulator (`testing/scenarios/simulate_1to1.py`)
 
-A 734-line interactive tool that simulates the WhatsApp bot processing customer messages one-by-one with configurable batch windows:
+A 740-line interactive tool that simulates the WhatsApp bot processing customer messages one-by-one with configurable batch windows:
 
 **Workflow:**
 1. Select difficulty (EASY/MEDIUM/HARD)
@@ -133,6 +133,30 @@ A 734-line interactive tool that simulates the WhatsApp bot processing customer 
 - Conversation logging to `testing/results/sim_logs/`
 - Color-coded comparison tables (MATCH/EXTRA/MISSED/QTY_MISMATCH)
 - Correction rounds (up to 3) for failed extractions
+
+### D. Fixed 3 Critical Bugs in Testing Infrastructure
+
+**Bug 1 — model_id not passed on final batch** (`simulate_1to1.py:592`):
+When messages were processed in the final batch, `call_llm()` was called without
+`model_id`, defaulting to Haiku regardless of the user's model selection. This means
+previous Gemini/Sonnet results for multi-batch scenarios may have had their final batch
+processed by Haiku. **Fixed.**
+
+**Bug 2 — Fuzzy matching on SAP item codes** (`scorer_utils.py:304`):
+The scorer was fuzzy-matching item codes, not just names. SAP codes from the same vendor
+share long prefixes (e.g., `J01IP17A02CHE001` vs `J01IC21A02CRE001` = 81% similar),
+causing cheese to match cream, cumin to match chilli, etc. Also raised match threshold
+from 0.4 to 0.5 (eliminates false positives, lowest legitimate match is 0.73). **Fixed.**
+
+**Bug 3 — Missing PackSize/UnitWeight in LLM prompt** (`simulate_1to1.py:140`):
+The simulator was NOT loading `product_catalog.json` or passing `catalog_by_code` to the
+prompt builder. The LLM received item names and order counts but **no conversion factors**
+(PackSize, UnitWeight). Every other test script (`run_all_haiku.py`, `deterministic_eval.py`,
+etc.) correctly loads and passes the catalog. **Fixed.** Also corrected file paths from
+`testing/scenarios/` to `testing/benchmarks/`.
+
+**Impact:** Previous Haiku vs Gemini comparison results are unreliable due to bugs 1 and 3.
+Re-running is recommended after these fixes.
 
 ### B. Ran Full Haiku vs Gemini Comparison (42 ship_to combinations)
 
@@ -294,24 +318,33 @@ python testing/eval/eval_harness_v2.py
 ## 11. WHAT NEEDS TO BE DONE NEXT
 
 ### Immediate (High Priority)
-1. **Fix Gemini JSON output failures** — 6 of 10 Gemini failures are zero-output. The model isn't producing parseable JSON. Need to investigate prompt format for Google API, possibly add explicit JSON mode or structured output.
+1. **Re-run Haiku vs Gemini comparison** — Previous results are unreliable due to 3 bugs now fixed (model_id fallback, missing PackSize/UnitWeight in prompt, false match scoring). A fresh run will give accurate baselines.
 
-2. **Fix multi-outlet routing** — Haiku's #1 failure mode. When a message contains items for multiple delivery addresses, the bot includes items meant for other outlets. Need better prompt instructions for outlet isolation.
+2. **Fix Gemini JSON output failures** — 6 of 10 Gemini failures were zero-output. Some may have been caused by the model_id bug (final batch falling back to Haiku). After re-run, investigate any remaining zero-output cases — possibly add explicit JSON mode for Google API.
 
-3. **Improve correction round effectiveness** — After 3 correction rounds, models still can't remove EXTRA items or add MISSED ones. The correction prompt needs to be more explicit.
+3. **Fix multi-outlet routing** — Haiku's #1 failure mode. When a message contains items for multiple delivery addresses, the bot includes items meant for other outlets. Need better prompt instructions for outlet isolation.
+
+4. **Improve correction round effectiveness** — After 3 correction rounds, models still can't remove EXTRA items or add MISSED ones. The correction prompt needs to be more explicit.
 
 ### Medium Priority
-4. **Add Sonnet to simulator** — It's already in the model menu but hasn't been benchmarked in the new 1-to-1 conversational format (only in the batch eval harness).
+5. **Add Sonnet to simulator** — It's already in the model menu but hasn't been benchmarked in the new 1-to-1 conversational format (only in the batch eval harness).
 
-5. **Address quantity conversion edge cases** — Some SAP expected quantities are wildly different from what customers literally order (e.g., S22: customer says "Chocolate tea time 10kg", SAP expects 56 units across 3 different products).
+6. **Address quantity conversion edge cases** — Some SAP expected quantities are wildly different from what customers literally order (e.g., S22: customer says "Chocolate tea time 10kg", SAP expects 56 units across 3 different products). Now that PackSize/UnitWeight are in the prompt, many of these should self-correct.
 
-6. **Ship_to name normalization** — S12 failed purely because Haiku used "Govandi Central Kitchen" instead of "URBAN GOURMET INDIA PVT LTD (27 BAKE HOUSE)" — all items were correct.
+7. **Ship_to name normalization** — S12 failed purely because Haiku used "Govandi Central Kitchen" instead of "URBAN GOURMET INDIA PVT LTD (27 BAKE HOUSE)" — all items were correct.
+
+### Fixed This Session (no longer needed)
+- ~~model_id bug on final batch~~ — Fixed
+- ~~Fuzzy matching on item codes causing false positives~~ — Fixed, now exact-match only
+- ~~Missing PackSize/UnitWeight in simulator prompt~~ — Fixed, catalog now loaded
+- ~~Match threshold too low (0.4)~~ — Raised to 0.5
+- ~~File paths pointing to wrong directory~~ — Fixed to use testing/benchmarks/
 
 ### Future / Production
-7. **Production webhook** — Flask app in `src/webhook/app.py` with WhatsApp Business API integration
-8. **SAP B1 Service Layer integration** — Push confirmed orders into SAP
-9. **Second client (ACS)** — Arvind Snacks in Chennai, chat exports already in `clients/ACS/`
-10. **Cost optimization** — Gemini at $0.02 vs Sonnet at $0.89 for same 24 scenarios
+8. **Production webhook** — Flask app in `src/webhook/app.py` with WhatsApp Business API integration
+9. **SAP B1 Service Layer integration** — Push confirmed orders into SAP
+10. **Second client (ACS)** — Arvind Snacks in Chennai, chat exports already in `clients/ACS/`
+11. **Cost optimization** — Gemini at $0.02 vs Sonnet at $0.89 for same 24 scenarios
 
 ---
 
