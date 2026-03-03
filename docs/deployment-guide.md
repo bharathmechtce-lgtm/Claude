@@ -9,7 +9,7 @@
 
 | Component | Technology | Details |
 |-----------|-----------|---------|
-| VPS | Hostinger Ubuntu | Cloud server hosting all services |
+| VPS | Hostinger Ubuntu | IP: `138.199.208.180` — Cloud server hosting all services |
 | Reverse Proxy | Caddy 2 (Alpine) | Auto HTTPS via Let's Encrypt |
 | Application | Python 3.11 + FastAPI | Webhook receiver + LLM caller |
 | Containerisation | Docker Compose | Two containers: `bot` + `caddy` |
@@ -68,7 +68,7 @@ LLM_MODEL=claude-sonnet-4-5-20250929
 
 ```bash
 # 1. SSH into VPS
-ssh user@<vps-ip>
+ssh root@138.199.208.180
 
 # 2. Clone the repo
 git clone <repo-url> ~/Claude
