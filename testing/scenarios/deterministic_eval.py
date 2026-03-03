@@ -27,8 +27,19 @@ KPIs tracked:
     - order_score: matched_fields / total_fields × 100
 
 Usage:
+  # Single model:
   export ANTHROPIC_API_KEY=sk-...
-  python3 deterministic_eval.py [--model claude-haiku-4-5-20251001] [--scenarios 1,5,10]
+  python3 deterministic_eval.py --model claude-haiku-4-5-20251001
+
+  # Gemini:
+  export GEMINI_API_KEY=AIza...
+  python3 deterministic_eval.py --model gemini-2.5-flash
+
+  # Both (comparison):
+  python3 deterministic_eval.py --model haiku,gemini
+
+  # Subset of scenarios:
+  python3 deterministic_eval.py --model haiku --scenarios 1,5,10
 """
 
 import json
@@ -69,12 +80,34 @@ for env_candidate in [
                 if key and key not in os.environ:
                     os.environ[key] = val
 
-API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 
 # ── Model configs ──
-MODEL_COSTS = {
-    "claude-haiku-4-5-20251001": {"input": 0.80, "output": 4.0},
-    "claude-sonnet-4-5-20250929": {"input": 3.0, "output": 15.0},
+MODEL_REGISTRY = {
+    # Anthropic
+    "claude-haiku-4-5-20251001": {
+        "provider": "anthropic", "input_cost": 1.0, "output_cost": 5.0,
+    },
+    "claude-sonnet-4-5-20250929": {
+        "provider": "anthropic", "input_cost": 3.0, "output_cost": 15.0,
+    },
+    # Google Gemini
+    "gemini-2.5-flash": {
+        "provider": "google", "input_cost": 0.30, "output_cost": 2.50,
+    },
+    "gemini-2.0-flash": {
+        "provider": "google", "input_cost": 0.10, "output_cost": 0.40,
+    },
+}
+
+# Shortcuts for --model flag
+MODEL_ALIASES = {
+    "haiku": "claude-haiku-4-5-20251001",
+    "sonnet": "claude-sonnet-4-5-20250929",
+    "gemini": "gemini-2.5-flash",
+    "gemini-2.5": "gemini-2.5-flash",
+    "gemini-2.0": "gemini-2.0-flash",
 }
 
 # ── Load test data ──
@@ -207,41 +240,94 @@ def find_relevant_messages(scenario, target_ship_to):
 
 
 # ═══════════════════════════════════════════════════════════════
-# API CALLER
+# API CALLERS (Anthropic + Google)
 # ═══════════════════════════════════════════════════════════════
 
+def _call_anthropic(messages, system_prompt, model_id):
+    """Call Anthropic Claude API. Returns (text, input_tokens, output_tokens)."""
+    resp = requests.post(
+        "https://api.anthropic.com/v1/messages",
+        headers={
+            "x-api-key": ANTHROPIC_API_KEY,
+            "anthropic-version": "2023-06-01",
+            "content-type": "application/json",
+        },
+        json={
+            "model": model_id,
+            "max_tokens": 4096,
+            "system": system_prompt,
+            "messages": messages,
+        },
+        timeout=120,
+    )
+    data = resp.json()
+    if resp.status_code == 429:
+        return None, 0, 0  # signal retry
+    if resp.status_code != 200:
+        err = data.get("error", {}).get("message", str(data))
+        return f"[API ERROR: {err}]", 0, 0
+    text = ""
+    for block in data.get("content", []):
+        if block.get("type") == "text":
+            text += block["text"]
+    return text, data["usage"]["input_tokens"], data["usage"]["output_tokens"]
+
+
+def _call_google(messages, system_prompt, model_id):
+    """Call Google Gemini API. Converts Anthropic message format to Gemini format.
+    Returns (text, input_tokens, output_tokens)."""
+    # Convert messages to Gemini format
+    gemini_contents = []
+    for msg in messages:
+        role = "user" if msg["role"] == "user" else "model"
+        gemini_contents.append({
+            "role": role,
+            "parts": [{"text": msg["content"]}],
+        })
+
+    resp = requests.post(
+        f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent?key={GEMINI_API_KEY}",
+        headers={"Content-Type": "application/json"},
+        json={
+            "system_instruction": {"parts": [{"text": system_prompt}]},
+            "contents": gemini_contents,
+            "generationConfig": {"maxOutputTokens": 4096},
+        },
+        timeout=120,
+    )
+    data = resp.json()
+    if resp.status_code == 429:
+        return None, 0, 0  # signal retry
+    if resp.status_code != 200:
+        err = data.get("error", {}).get("message", str(data))
+        return f"[API ERROR: {err}]", 0, 0
+
+    # Extract text
+    try:
+        text = data["candidates"][0]["content"]["parts"][0]["text"]
+    except (KeyError, IndexError):
+        return "[ERROR: No text in response]", 0, 0
+
+    usage = data.get("usageMetadata", {})
+    input_tokens = usage.get("promptTokenCount", 0)
+    output_tokens = usage.get("candidatesTokenCount", 0)
+    return text, input_tokens, output_tokens
+
+
 def call_api(messages, system_prompt, model_id):
+    """Route API call to the correct provider with retry logic."""
+    provider = MODEL_REGISTRY.get(model_id, {}).get("provider", "anthropic")
+    caller = _call_anthropic if provider == "anthropic" else _call_google
+
     for attempt in range(3):
         try:
-            resp = requests.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={
-                    "x-api-key": API_KEY,
-                    "anthropic-version": "2023-06-01",
-                    "content-type": "application/json",
-                },
-                json={
-                    "model": model_id,
-                    "max_tokens": 4096,
-                    "system": system_prompt,
-                    "messages": messages,
-                },
-                timeout=120,
-            )
-            data = resp.json()
-            if resp.status_code == 429:
+            text, tok_in, tok_out = caller(messages, system_prompt, model_id)
+            if text is None:  # rate limited
                 wait = min(2 ** (attempt + 1), 30)
                 print(f"      Rate limited, waiting {wait}s...")
                 time.sleep(wait)
                 continue
-            if resp.status_code != 200:
-                err = data.get("error", {}).get("message", str(data))
-                return f"[API ERROR: {err}]", 0, 0
-            text = ""
-            for block in data.get("content", []):
-                if block.get("type") == "text":
-                    text += block["text"]
-            return text, data["usage"]["input_tokens"], data["usage"]["output_tokens"]
+            return text, tok_in, tok_out
         except requests.exceptions.Timeout:
             if attempt < 2:
                 print(f"      Timeout, retrying ({attempt+1}/3)...")
@@ -472,8 +558,8 @@ def run_one(order_info, model_id):
     )
 
     t_end = time.time()
-    costs = MODEL_COSTS.get(model_id, {"input": 1.0, "output": 5.0})
-    cost = (total_in / 1_000_000) * costs["input"] + (total_out / 1_000_000) * costs["output"]
+    reg = MODEL_REGISTRY.get(model_id, {"input_cost": 1.0, "output_cost": 5.0})
+    cost = (total_in / 1_000_000) * reg["input_cost"] + (total_out / 1_000_000) * reg["output_cost"]
 
     return {
         # ── Identity ──
@@ -619,44 +705,96 @@ def print_summary(results, model_id, skipped):
 
 
 # ═══════════════════════════════════════════════════════════════
-# MAIN
+# COMPARISON PRINTER (multi-model)
 # ═══════════════════════════════════════════════════════════════
 
-def main():
-    parser = argparse.ArgumentParser(description="Deterministic Order Bot Eval")
-    parser.add_argument("--model", default="claude-haiku-4-5-20251001",
-                        help="Model ID to test")
-    parser.add_argument("--scenarios", default=None,
-                        help="Comma-separated scenario IDs to run (e.g. 1,5,10). Default: all")
-    parser.add_argument("--dry-run", action="store_true",
-                        help="List orders without calling API")
-    args = parser.parse_args()
+def print_comparison(all_model_results):
+    """Print side-by-side comparison table for multiple models."""
+    if len(all_model_results) < 2:
+        return
 
-    if not API_KEY and not args.dry_run:
-        print("ERROR: No ANTHROPIC_API_KEY found.")
-        print("Set it via: export ANTHROPIC_API_KEY=sk-...")
-        print("Or create a .env file in the project root.")
-        sys.exit(1)
+    print(f"\n{'=' * 74}")
+    print(f"  HEAD-TO-HEAD COMPARISON")
+    print(f"{'=' * 74}")
 
-    scenario_ids = None
-    if args.scenarios:
-        scenario_ids = [int(x) for x in args.scenarios.split(",")]
+    # Header
+    models = list(all_model_results.keys())
+    header = f"  {'Metric':<28s}"
+    for m in models:
+        short = m.split("/")[-1][:18]
+        header += f" | {short:>18s}"
+    print(header)
+    print("  " + "-" * (30 + 21 * len(models)))
 
-    all_orders = discover_all_orders(scenario_ids)
+    def row(label, values, fmt="{}", bold_best=None):
+        line = f"  {label:<28s}"
+        for v in values:
+            line += f" | {fmt.format(v):>18s}"
+        print(line)
 
-    print("=" * 74)
-    print(f"  DETERMINISTIC EVAL — {len(all_orders)} orders × {args.model}")
+    for label, key, fmt, higher_better in [
+        ("T1 Complete PASS", "t1_pass", "{}%", True),
+        ("T1 Avg Order Score", "t1_avg", "{:.1f}%", True),
+        ("T1 Product Recall", "t1_recall", "{}%", True),
+        ("T1 Qty Accuracy", "t1_qty_acc", "{}%", True),
+        ("T1 Phantom Items", "t1_extra", "{}", False),
+        ("T2 Complete PASS", "t2_pass", "{}%", True),
+        ("T2 Avg Order Score", "t2_avg", "{:.1f}%", True),
+        ("Avg Turns", "avg_turns", "{:.1f}", False),
+        ("Avg Corrections", "avg_corr", "{:.1f}", False),
+        ("Avg Time (s)", "avg_time", "{:.1f}", False),
+        ("Total Cost", "cost", "${:.4f}", False),
+        ("Cost per Order", "cost_per", "${:.4f}", False),
+    ]:
+        vals = []
+        for m in models:
+            r = all_model_results[m]["results"]
+            n = len(r)
+            if n == 0:
+                vals.append(0)
+                continue
+            t1_target = sum(x["target_count"] for x in r)
+            t1_matched = sum(x["t1_matched"] for x in r)
+            t2_matched = sum(x["matched"] for x in r)
+            if key == "t1_pass":
+                vals.append(sum(1 for x in r if x["t1_complete"]) * 100 // n)
+            elif key == "t1_avg":
+                vals.append(sum(x["t1_order_score"] for x in r) / n)
+            elif key == "t1_recall":
+                vals.append(t1_matched * 100 // t1_target if t1_target else 0)
+            elif key == "t1_qty_acc":
+                vals.append(sum(x["t1_qty_correct"] for x in r) * 100 // t1_matched if t1_matched else 0)
+            elif key == "t1_extra":
+                vals.append(sum(x["t1_extra"] for x in r))
+            elif key == "t2_pass":
+                vals.append(sum(1 for x in r if x["complete_order"]) * 100 // n)
+            elif key == "t2_avg":
+                vals.append(sum(x["order_score"] for x in r) / n)
+            elif key == "avg_turns":
+                vals.append(sum(x["turns"] for x in r) / n)
+            elif key == "avg_corr":
+                vals.append(sum(x["correction_rounds"] for x in r) / n)
+            elif key == "avg_time":
+                vals.append(sum(x["time_taken_s"] for x in r) / n)
+            elif key == "cost":
+                vals.append(sum(x["cost"] for x in r))
+            elif key == "cost_per":
+                vals.append(sum(x["cost"] for x in r) / n)
+        row(label, vals, fmt)
+
+
+# ═══════════════════════════════════════════════════════════════
+# RUN ONE MODEL (full eval)
+# ═══════════════════════════════════════════════════════════════
+
+def run_model(model_id, all_orders, scenario_ids=None):
+    """Run all orders for a single model. Returns (results, skipped)."""
+    short_name = model_id.replace("claude-", "").replace("-20251001", "").replace("-20250929", "")
+    print(f"\n{'=' * 74}")
+    print(f"  DETERMINISTIC EVAL — {len(all_orders)} orders × {short_name}")
     print(f"  Flow: raw msgs → score → deterministic corrections → rescore")
     print(f"  Max correction rounds: {MAX_CORRECTION_ROUNDS}")
-    print("=" * 74)
-
-    if args.dry_run:
-        print("\n  DRY RUN — listing orders:\n")
-        for i, order in enumerate(all_orders):
-            print(f"  [{i+1:2d}] S{order['scenario_id']:02d} [{order['difficulty']:6s}] "
-                  f"{order['chat_name'][:30]:<30s} | {order['ship_to'][:40]} | {order['item_count']} SAP items")
-        print(f"\n  Total: {len(all_orders)} orders")
-        return
+    print(f"{'=' * 74}")
 
     results = []
     skipped = 0
@@ -669,11 +807,12 @@ def main():
         print(f"\n  [{i+1}/{len(all_orders)}] S{sid:02d} ({diff}) | {ship_to[:45]} | {order['item_count']} SAP items")
 
         try:
-            result = run_one(order, args.model)
+            result = run_one(order, model_id)
             if result is None:
                 print(f"    SKIP: No testable items")
                 skipped += 1
                 continue
+            result["model"] = model_id
             results.append(result)
 
             t1_tag = "T1:PASS" if result["t1_complete"] else "T1:FAIL"
@@ -682,16 +821,15 @@ def main():
             if result["filtered_out"] > 0:
                 filtered_note = f" (filtered {result['filtered_out']})"
 
-            print(f"    {t1_tag} → {t2_tag} | "
+            print(f"    {t1_tag} -> {t2_tag} | "
                   f"Match: {result['t1_matched']}/{result['target_count']}{filtered_note} | "
                   f"Qty: {result['t1_qty_correct']}/{result['t1_matched']} | "
                   f"Extra: {result['t1_extra']} | "
-                  f"Score: {result['t1_order_score']:.0f}%→{result['order_score']:.0f}% | "
+                  f"Score: {result['t1_order_score']:.0f}%->{result['order_score']:.0f}% | "
                   f"Corrections: {result['correction_rounds']} | "
                   f"${result['cost']:.4f} | "
                   f"{result['time_taken_s']:.0f}s")
 
-            # Print details for Tier 1 failures
             if not result["t1_complete"]:
                 for d in result["first_pass_details"]:
                     if d["status"] != "MATCH":
@@ -703,6 +841,7 @@ def main():
             import traceback
             traceback.print_exc()
             results.append({
+                "model": model_id,
                 "scenario_id": f"S{sid:02d}", "difficulty": diff,
                 "chat_name": order["chat_name"], "ship_to": ship_to,
                 "target_count": order["item_count"], "raw_sap_count": order["item_count"],
@@ -717,17 +856,99 @@ def main():
                 "conversation": [], "llm_json": None, "error": str(e),
             })
 
-    # ── Save results ──
+    return results, skipped
+
+
+# ═══════════════════════════════════════════════════════════════
+# MAIN
+# ═══════════════════════════════════════════════════════════════
+
+def resolve_model(name):
+    """Resolve model alias or full ID."""
+    name = name.strip()
+    if name in MODEL_ALIASES:
+        return MODEL_ALIASES[name]
+    if name in MODEL_REGISTRY:
+        return name
+    # Try partial match
+    for full_id in MODEL_REGISTRY:
+        if name in full_id:
+            return full_id
+    return name  # pass through, will fail at API call if invalid
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Deterministic Order Bot Eval")
+    parser.add_argument("--model", default="haiku",
+                        help="Model(s) to test. Comma-separated for comparison. "
+                             "Aliases: haiku, sonnet, gemini, gemini-2.0")
+    parser.add_argument("--scenarios", default=None,
+                        help="Comma-separated scenario IDs (e.g. 1,5,10). Default: all")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="List orders without calling API")
+    args = parser.parse_args()
+
+    # Resolve model names
+    model_names = [resolve_model(m) for m in args.model.split(",")]
+
+    # Check API keys
+    for model_id in model_names:
+        provider = MODEL_REGISTRY.get(model_id, {}).get("provider", "anthropic")
+        if provider == "anthropic" and not ANTHROPIC_API_KEY and not args.dry_run:
+            print(f"ERROR: No ANTHROPIC_API_KEY for {model_id}")
+            print("Set it: export ANTHROPIC_API_KEY=sk-...")
+            sys.exit(1)
+        if provider == "google" and not GEMINI_API_KEY and not args.dry_run:
+            print(f"ERROR: No GEMINI_API_KEY for {model_id}")
+            print("Set it: export GEMINI_API_KEY=AIza...")
+            sys.exit(1)
+
+    scenario_ids = None
+    if args.scenarios:
+        scenario_ids = [int(x) for x in args.scenarios.split(",")]
+
+    all_orders = discover_all_orders(scenario_ids)
+
+    if args.dry_run:
+        print(f"\n  DRY RUN — {len(all_orders)} orders, models: {', '.join(model_names)}\n")
+        for i, order in enumerate(all_orders):
+            print(f"  [{i+1:2d}] S{order['scenario_id']:02d} [{order['difficulty']:6s}] "
+                  f"{order['chat_name'][:30]:<30s} | {order['ship_to'][:40]} | {order['item_count']} SAP items")
+        print(f"\n  Total: {len(all_orders)} orders x {len(model_names)} model(s)")
+        return
+
+    # Run each model
+    all_model_results = {}
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     results_dir = os.path.join(PROJECT_ROOT, "results")
     os.makedirs(results_dir, exist_ok=True)
-    out_path = os.path.join(results_dir, f"deterministic_eval_{ts}.json")
-    with open(out_path, "w") as f:
-        json.dump(results, f, indent=2, default=str)
 
-    # ── Print summary ──
-    print_summary(results, args.model, skipped)
-    print(f"\n  Results saved: {out_path}")
+    for model_id in model_names:
+        results, skipped = run_model(model_id, all_orders, scenario_ids)
+
+        # Save per-model results
+        safe_name = model_id.replace("/", "_").replace(".", "_")
+        out_path = os.path.join(results_dir, f"deterministic_eval_{safe_name}_{ts}.json")
+        with open(out_path, "w") as f:
+            json.dump(results, f, indent=2, default=str)
+
+        print_summary(results, model_id, skipped)
+        print(f"\n  Results saved: {out_path}")
+
+        all_model_results[model_id] = {"results": results, "skipped": skipped}
+
+    # Comparison table if multiple models
+    if len(model_names) > 1:
+        print_comparison(all_model_results)
+
+        # Save combined results
+        combined_path = os.path.join(results_dir, f"comparison_{ts}.json")
+        combined = {}
+        for model_id, data in all_model_results.items():
+            combined[model_id] = data["results"]
+        with open(combined_path, "w") as f:
+            json.dump(combined, f, indent=2, default=str)
+        print(f"\n  Comparison saved: {combined_path}")
 
 
 if __name__ == "__main__":
