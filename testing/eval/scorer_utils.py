@@ -240,7 +240,7 @@ def filter_testable_items(target_items, all_msg_text):
 # ═══════════════════════════════════════════════════════════════
 
 def score_order(llm_json, target_items, target_ship_to=None,
-                match_threshold=0.4, qty_tolerance=0.10):
+                match_threshold=0.5, qty_tolerance=0.10):
     """Score an LLM-extracted order against ground truth.
 
     Args:
@@ -301,9 +301,11 @@ def score_order(llm_json, target_items, target_ship_to=None,
                     and ll["item_code"] == tgt["item_code"]):
                 score = 1.0
             else:
-                score = max(
-                    fuzzy_match(ll.get("item_name", ""), tgt["description"]),
-                    fuzzy_match(ll.get("item_code", ""), tgt["item_code"]),
+                # Only fuzzy-match on item names, NOT codes.
+                # SAP codes share long vendor prefixes (e.g. J01IP17A02CHE001
+                # vs J01IC21A02CRE001 = 81% similar) causing false matches.
+                score = fuzzy_match(
+                    ll.get("item_name", ""), tgt["description"]
                 )
             all_pairs.append((score, li, ti))
 

@@ -39,7 +39,14 @@ REPO_ROOT = os.path.dirname(os.path.dirname(SCRIPT_DIR))
 sys.path.insert(0, REPO_ROOT)
 from src.core.prompts import build_system_prompt as _build_shared_prompt, EXTRACTION_PROMPT
 from testing.eval.scorer_utils import extract_json, score_order, filter_testable_items
-SCENARIOS_PATH = os.path.join(SCRIPT_DIR, "test_scenarios.json")
+BENCHMARKS_DIR = os.path.join(os.path.dirname(SCRIPT_DIR), "benchmarks")
+SCENARIOS_PATH = os.path.join(BENCHMARKS_DIR, "test_scenarios.json")
+CATALOG_PATH = os.path.join(BENCHMARKS_DIR, "product_catalog.json")
+
+# Load product catalog (pack_size + unit_weight for quantity conversion)
+with open(CATALOG_PATH) as _f:
+    _CATALOG = json.load(_f)
+CATALOG_BY_CODE = {p["item_code"]: p for p in _CATALOG}
 
 # Load .env from project root
 def _load_dotenv(path):
@@ -143,7 +150,8 @@ def build_system_prompt(scenario):
             "card_names": scenario["card_names"],
             "ship_to_addresses": scenario["ship_to_addresses"],
         },
-        historical_patterns=scenario["historical_patterns"],
+        product_catalog=scenario["historical_patterns"],
+        catalog_by_code=CATALOG_BY_CODE,
     )
 
 
@@ -589,7 +597,7 @@ def run_simulation(scenario):
         })
 
         response, in_tok, out_tok = call_llm(
-            conversation_history, system_prompt
+            conversation_history, system_prompt, model_id
         )
         total_in_tokens += in_tok
         total_out_tokens += out_tok
