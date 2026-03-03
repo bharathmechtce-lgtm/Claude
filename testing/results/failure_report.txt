@@ -1,0 +1,557 @@
+====================================================================================================
+FAILURE REPORT — All Scenarios Failing After Try 2 (Haiku & Gemini)
+Generated: 2026-03-03
+====================================================================================================
+
+Total unique failing scenarios: 16
+  - Both fail: 4
+  - Haiku only: 5
+  - Gemini only: 7
+
+====================================================================================================
+FAILURE #1: S01 | EASY | Failed by: Gemini
+Chat: Good Food Concept
+Ship-to: GOOD FOOD CONCEPT (BOMBAY GYMKHANA)
+Expected items: 2
+----------------------------------------------------------------------------------------------------
+
+CUSTOMER MESSAGES:
+  MSG 1: Hi, this is GOOD FOOD CONCEPT.
+
+5kg amul butter
+3kg amul cheese block
+2 btls sweet chilli sauce
+
+Delivery to: GOOD FOOD CONCEPT (BOMBAY GYMKHANA)
+  MSG 2: Deliver to: GOOD FOOD CONCEPT (BOMBAY GYMKHANA)
+  MSG 3: Confirmed, looks good
+
+--- Gemini Result (Score: 60.0%) ---
+    Extra: 0 | Missed: 0
+    Status          LLM Item                                LLM Qty SAP Item                                SAP Qty
+    --------------------------------------------------------------------------------------------------------------
+    QTY_MISMATCH    AMUL-BUTTER IP 500GMS                      10.0 TULUA KASHMIRI CHILLI WHOLE 1KG             4.0
+    QTY_MISMATCH    sweet chilli sauce                          2.0 TULUA PANDA CHILLI WHOLE 1 KG               4.0
+
+====================================================================================================
+FAILURE #2: S03 | EASY | Failed by: Gemini
+Chat: Jalapeno Food Ordering
+Ship-to: JALAPENO FOODS PVT LTD (PAREL EAST)
+Expected items: 1
+----------------------------------------------------------------------------------------------------
+
+CUSTOMER MESSAGES:
+  MSG 1: Hi, this is JALAPENO FOODS PVT LTD.
+
+Please please order 
+Baskin robin 6box
+  MSG 2: Confirmed, looks good
+  MSG 4: Please output the order as valid JSON only. No other text.
+
+--- Gemini Result (Score: 0.0%) ---
+    Extra: 0 | Missed: 1
+    Status          LLM Item                                LLM Qty SAP Item                                SAP Qty
+    --------------------------------------------------------------------------------------------------------------
+
+====================================================================================================
+FAILURE #3: S04 | EASY | Failed by: Gemini
+Chat: Laxmi Foods Pillsbury
+Ship-to: NINETY DEGREE (RABALE)
+Expected items: 3
+----------------------------------------------------------------------------------------------------
+
+CUSTOMER MESSAGES:
+  MSG 1: Hi, this is LAXMI FOODS.
+
+Eggless Brownie mix-4 bag
+Classic eggs free chocolate eggless-40 kg
+Nestle everyday milk whitner-12 kg
+  MSG 2: Confirmed, looks good
+  MSG 4: Please output the order as valid JSON only. No other text.
+
+--- Gemini Result (Score: 0.0%) ---
+    Extra: 0 | Missed: 3
+    Status          LLM Item                                LLM Qty SAP Item                                SAP Qty
+    --------------------------------------------------------------------------------------------------------------
+
+====================================================================================================
+FAILURE #4: S07 | EASY | Failed by: Gemini
+Chat: DU Hospitality X TJUK
+Ship-to: INNERCIRCLE HOSPITALITY LLP
+Expected items: 9
+----------------------------------------------------------------------------------------------------
+
+CUSTOMER MESSAGES:
+  MSG 1: Hi, this is INNERCIRCLE HOSPITALITY LLP.
+
+Sirroco Jalepeno Slice- 1Tin
+Tulua Cloves-2kg
+Tulua Kashmiri Chilli -2kg
+Solaz Pomaz 5L -2Tin
+Tahina-1box
+Reggia Spaghetti-1box
+Tobasco-12btl
+Morinu Tofu -1box
+Scheppes Soda-3box
+Real Cranberry -1 case
+Real Apple-1case
+Innercricle Hospitality Llp Order for tomorrow.
+Gigi Asia
+Solaz Pomace 5L-2tin
+  MSG 2: Confirmed, looks good
+  MSG 4: Please output the order as valid JSON only. No other text.
+
+--- Gemini Result (Score: 0.0%) ---
+    Extra: 0 | Missed: 9
+    Status          LLM Item                                LLM Qty SAP Item                                SAP Qty
+    --------------------------------------------------------------------------------------------------------------
+
+====================================================================================================
+FAILURE #5: S09 | MEDIUM | Failed by: Haiku, Gemini
+Chat: Good Food Concept
+Ship-to: GOOD FOOD CONCEPT (BOMBAY GYMKHANA)
+Expected items: 2
+----------------------------------------------------------------------------------------------------
+
+CUSTOMER MESSAGES:
+  MSG 1: Hi, this is GOOD FOOD CONCEPT.
+
+Gowardhan prrosed block cheese hard 1 box.
+Kinley soda 3 box.
+Sprite 2.5 liter ka 2 box.
+Diet coke 3 box.
+Tonik water 2 box.
+Coke 2.5 liter ka 1 box.
+Delecta cream cheese 1 box.
+Butter 1 box.
+Add samosa patti 1 box.
+
+Delivery to: GOOD FOOD CONCEPT (BOMBAY GYMKHANA)
+  MSG 2: Deliver to: GOOD FOOD CONCEPT (BOMBAY GYMKHANA)
+  MSG 3: Yes, go with the closest match from your catalogue
+  MSG 4: Yes, that's correct
+  MSG 5: Confirmed, looks good
+
+--- Haiku Result (Score: 27.27%) ---
+    Extra: 6 | Missed: 0
+    Status          LLM Item                                LLM Qty SAP Item                                SAP Qty
+    --------------------------------------------------------------------------------------------------------------
+    QTY_MISMATCH    GOWARDHAN PROCESSED CHEESE 1KG(HARD)       12.0 GO SLICES CHEESE 750GMS                     6.0
+    QTY_MISMATCH    AMUL-BUTTER IP 500GMS                      40.0 AMUL-PROCESSED CHEESE BLOCK 1KG            12.0
+    EXTRA           KINLEY CLUB SODA 750ML                       72 -                                             0
+    EXTRA           SPRITE 2.25 LTR                              18 -                                             0
+    EXTRA           COKE DIET CAN 300ML(DKO)                     72 -                                             0
+    EXTRA           COKE 2.25 LTR                                 9 -                                             0
+    EXTRA           DLECTA-CREAM CHEESE 1KG                       8 -                                             0
+    EXTRA           SWITZ SAMOSA PATTI 3/10 500GMS(REGUL         30 -                                             0
+
+--- Gemini Result (Score: 62.5%) ---
+    Extra: 3 | Missed: 0
+    Status          LLM Item                                LLM Qty SAP Item                                SAP Qty
+    --------------------------------------------------------------------------------------------------------------
+    MATCH           GO SLICES CHEESE 750GMS                     6.0 GO SLICES CHEESE 750GMS                     6.0
+    MATCH           AMUL-PROCESSED CHEESE BLOCK 1KG            12.0 AMUL-PROCESSED CHEESE BLOCK 1KG            12.0
+    EXTRA           SPRITE 2.25 LTR                              18 -                                             0
+    EXTRA           UNKNOWN: Tonik water                          2 -                                             0
+    EXTRA           COKE 2.25 LTR                                 9 -                                             0
+
+====================================================================================================
+FAILURE #6: S09 | MEDIUM | Failed by: Haiku, Gemini
+Chat: Good Food Concept
+Ship-to: GOOD FOOD CONCEPT-MAHIM.W
+Expected items: 4
+----------------------------------------------------------------------------------------------------
+
+CUSTOMER MESSAGES:
+  MSG 1: Hi, this is GOOD FOOD CONCEPT.
+
+Gowardhan prrosed block cheese hard 1 box.
+Kinley soda 3 box.
+Sprite 2.5 liter ka 2 box.
+Diet coke 3 box.
+Tonik water 2 box.
+Coke 2.5 liter ka 1 box.
+Delecta cream cheese 1 box.
+Butter 1 box.
+Add samosa patti 1 box.
+
+Delivery to: GOOD FOOD CONCEPT-MAHIM.W
+  MSG 2: Deliver to: GOOD FOOD CONCEPT-MAHIM.W
+  MSG 3: Please show me the complete order summary for confirmation.
+  MSG 4: Confirmed, looks good
+
+--- Haiku Result (Score: 35.71%) ---
+    Extra: 5 | Missed: 0
+    Status          LLM Item                                LLM Qty SAP Item                                SAP Qty
+    --------------------------------------------------------------------------------------------------------------
+    QTY_MISMATCH    AMUL-BUTTER IP 500GMS                      40.0 AMUL-BUTTER IP 500GMS                      15.0
+    QTY_MISMATCH    GOWARDHAN PROCESSED CHEESE 1KG(HARD)       12.0 GO MOZZARELLA CHEESE DICE 2KG(IQF)          2.0
+    QTY_MISMATCH    SWITZ SAMOSA PATTI 3/10 500GMS(REGUL       30.0 GO SLICES CHEESE 750GMS                     3.0
+    QTY_MISMATCH    DLECTA-CREAM CHEESE 1KG                     8.0 INDIBITES-MINI PUNJABI SAMOSA 1KG           2.0
+    EXTRA           KINLEY CLUB SODA 750ML                       72 -                                             0
+    EXTRA           SPRITE 2.25 LTR                              18 -                                             0
+    EXTRA           COKE DIET CAN 300ML(DKO)                     72 -                                             0
+    EXTRA           TONIC WATER                                   2 -                                             0
+    EXTRA           COKE 2.25 LTR                                 9 -                                             0
+
+--- Gemini Result (Score: 66.67%) ---
+    Extra: 0 | Missed: 0
+    Status          LLM Item                                LLM Qty SAP Item                                SAP Qty
+    --------------------------------------------------------------------------------------------------------------
+    MATCH           AMUL-BUTTER IP 500GMS                      15.0 AMUL-BUTTER IP 500GMS                      15.0
+    QTY_MISMATCH    GOWARDHAN PROCESSED CHEESE 1KG(HARD)       12.0 GO MOZZARELLA CHEESE DICE 2KG(IQF)          2.0
+    QTY_MISMATCH    SWITZ SAMOSA PATTI 3/10 500GMS(REGUL       30.0 GO SLICES CHEESE 750GMS                     3.0
+    QTY_MISMATCH    DLECTA-CREAM CHEESE 1KG                     8.0 INDIBITES-MINI PUNJABI SAMOSA 1KG           2.0
+
+====================================================================================================
+FAILURE #7: S11 | MEDIUM | Failed by: Gemini
+Chat: Jalapeno Food Ordering
+Ship-to: JALAPENO FOODS PVT LTD (PAREL EAST)
+Expected items: 6
+----------------------------------------------------------------------------------------------------
+
+CUSTOMER MESSAGES:
+  MSG 1: Hi, this is JALAPENO FOODS PVT LTD.
+
+Please please order 
+Potato wedges -1box
+Rosti round -1box
+Tortilla 10no-2box
+Tonic water schweppes -3box
+Pls add order 
+9mm fres fries sure scrip -3box
+Baskin robin -4box
+  MSG 2: Confirmed, looks good
+  MSG 4: Please output the order as valid JSON only. No other text.
+
+--- Gemini Result (Score: 0.0%) ---
+    Extra: 0 | Missed: 6
+    Status          LLM Item                                LLM Qty SAP Item                                SAP Qty
+    --------------------------------------------------------------------------------------------------------------
+
+====================================================================================================
+FAILURE #8: S12 | MEDIUM | Failed by: Haiku
+Chat: Urban Gourmet UGIPL
+Ship-to: URBAN GOURMET INDIA PVT LTD (27 BAKE HOUSE)
+Expected items: 5
+----------------------------------------------------------------------------------------------------
+
+CUSTOMER MESSAGES:
+  MSG 1: Hi, this is URBAN GOURMET INDIA PRIVATE LIMITED (27 BAKE HOUSE), URBAN GOURMET INDIA PRIVATE LIMITED.
+
+Please send govandi central kitchen 
+Dite coke 6 case
+Thumsup 2 case
+Ginger ale 3 case
+Regards
+Yogesh
+Urban Gourmet Ind Pvt Ltd-G27 Bakery Govandi Deonar
+Please add more 
+Thumsup 8 case
+Dite coke 4 case
+Ginger ale 8 case
+Regular coke 6 case
+Sprite 2 case
+Tonic water 2 case
+  MSG 2: Confirmed, looks good
+
+--- Haiku Result (Score: 90.91%) ---
+    Extra: 0 | Missed: 0
+    Status          LLM Item                                LLM Qty SAP Item                                SAP Qty
+    --------------------------------------------------------------------------------------------------------------
+    MATCH           COKE DIET CAN 300ML(DKO)                  240.0 COKE DIET CAN 300ML(DKO)                  240.0
+    MATCH           SCHWEPPES GINGER ALE CAN 300ML(SGA)       264.0 SCHWEPPES GINGER ALE  CAN 300ML(SGA)      264.0
+    MATCH           COKE CAN 300ML(KO)                        144.0 COKE CAN 300ML(KO)                        144.0
+    MATCH           SPRITE CAN 300ML(SP)                       48.0 SPRITE CAN 300ML(SP)                       48.0
+    MATCH           SCHWEPPES TONIC WATER CAN 300ML(STW)       48.0 SCHWEPPES TONIC WATER CAN 300ML(STW)       48.0
+
+====================================================================================================
+FAILURE #9: S15 | MEDIUM | Failed by: Haiku, Gemini
+Chat: BAWA GROUP ORDERING
+Ship-to: HOTEL BAWA REGENCY
+Expected items: 2
+----------------------------------------------------------------------------------------------------
+
+CUSTOMER MESSAGES:
+  MSG 1: Hi, this is KIRAN BAWA HOTELS PVT LTD..
+
+Amul Prossd Cheese Block - 06 kg
+Amul Butter IP - 01Box
+Epigamia Almond Milk 1ltr - 12 pkt
+Knorr Chicken Broth Powder 500 grm - 02 pkt
+*Vijaydeep Hotel Pvt Ltd*
+*Vile Parle East*
+Plss coke 750 ml 1 case
+Vijaydeep Hotel Pvt Ltd 
+Hotel Bawa Continatal
+Juhu Tara Road
+Vanilla ice cream 2 bulk
+Amul cheese 1 kg
+Cooking rich Cream 4 pkt
+Sprite can 1 box
+Kinly soda 1 box
+  MSG 2: Deliver to: HOTEL BAWA REGENCY
+  MSG 3: Confirmed, looks good
+  MSG 5: Please output the order as valid JSON only. No other text.
+
+--- Haiku Result (Score: 23.08%) ---
+    Extra: 8 | Missed: 0
+    Status          LLM Item                                LLM Qty SAP Item                                SAP Qty
+    --------------------------------------------------------------------------------------------------------------
+    QTY_MISMATCH    AMUL-PROCESSED CHEESE BLOCK 1KG             6.0 AMUL-CREAM 1LTR                            12.0
+    QTY_MISMATCH    AMUL-PROCESSED CHEESE BLOCK 1KG             1.0 GO SLICES CHEESE 750GMS                    10.0
+    EXTRA           AMUL-BUTTER IP 500GMS                        40 -                                             0
+    EXTRA           EPIGAMIA ALMOND MILK 1LTR                    12 -                                             0
+    EXTRA           KNORR CHICKEN BROTH POWDER 500GRM             2 -                                             0
+    EXTRA           COKE 750ML                                   24 -                                             0
+    EXTRA           VANILLA ICE CREAM                             2 -                                             0
+    EXTRA           COOKING RICH CREAM                            4 -                                             0
+    EXTRA           SPRITE CAN                                   24 -                                             0
+    EXTRA           KINLEY SODA                                  24 -                                             0
+
+--- Gemini Result (Score: 71.43%) ---
+    Extra: 2 | Missed: 0
+    Status          LLM Item                                LLM Qty SAP Item                                SAP Qty
+    --------------------------------------------------------------------------------------------------------------
+    MATCH           AMUL-CREAM 1LTR                            12.0 AMUL-CREAM 1LTR                            12.0
+    MATCH           GO SLICES CHEESE 750GMS                    10.0 GO SLICES CHEESE 750GMS                    10.0
+    EXTRA           AMUL-PROCESSED CHEESE BLOCK 1KG               6 -                                             0
+    EXTRA           AMUL-BUTTER IP 500GMS                        40 -                                             0
+
+====================================================================================================
+FAILURE #10: S18 | HARD | Failed by: Haiku, Gemini
+Chat: Snow World & TJUK ORDERING
+Ship-to: POKKIDO JUNIOR
+Expected items: 7
+----------------------------------------------------------------------------------------------------
+
+CUSTOMER MESSAGES:
+  MSG 1: Hi, this is SNOW WORLD ENTERTAINMENT, PRASUK JAIN HOSPITALITY, PRASUK JAIN HOSPITALITY PRIVATE LIMITED.
+
+Order for 07/2/2026.
+French fries 15 pkt
+Butter 3 kg
+*PRASUK JAIN HOSPITALITY PRIVATE LIMITED*
+*POKIDDO JUNIOR*
+11/12, Raghuvanshi Mill, Senapati Bapat Marg, Gandhi Nagar, Lower Parel West, Worli, Mumbai, Maharashtra 400013
+Mob-9773723728.
+1. DAVINCI MOJITO MINT SYRUP - 4 BTL
+2. DAVINCI WATERMELON SYRUP - 3 BTL
+3. WHITE PEPPER POWDER - 2 PKT
+4. KASHMIRI CHILLI WHOLE - 5 PKT
+5. BLACK PEPPER WH
+  MSG 2: Deliver to: POKKIDO JUNIOR
+  MSG 3: Deliver to: POKKIDO JUNIOR
+  MSG 4: Confirmed, looks good
+
+--- Haiku Result (Score: 66.67%) ---
+    Extra: 3 | Missed: 0
+    Status          LLM Item                                LLM Qty SAP Item                                SAP Qty
+    --------------------------------------------------------------------------------------------------------------
+    MATCH           AMUL-BUTTER IP 500GMS                       6.0 AMUL-BUTTER IP 500GMS                       6.0
+    MATCH           TULUA RED CHILLI POWDER HOT 1KG             1.0 TULUA RED CHILLI POWDER HOT 1KG             1.0
+    MATCH           TULUA TURMERIC POWDER 1KG                   1.0 TULUA TURMERIC POWDER 1KG                   1.0
+    MATCH           MOTHER DAIRY VANILLA PK(LOW FAT)4000        4.0 MOTHER DAIRY VANILLA PK(LOW FAT)4000        4.0
+    QTY_MISMATCH    TULUA KASHMIRI CHILLI WHOLE 1KG             5.0 TULUA MUSTARD SEEDS1KG                      1.0
+    QTY_MISMATCH    MC CAINS F.F.-MC ST.CUT 9MM*9MM 2.5K       15.0 BASKIN-MISSISIPPI MUD ICE CREAM 100M        2.0
+    QTY_MISMATCH    DAVINCI GOURMET MOJITO MENTA CUBANO         4.0 BASKIN-COTTON CANDY ICE CREAM 100ML(        2.0
+    EXTRA           TULUA CUMIN WHOLE 1KG                         1 -                                             0
+    EXTRA           MUSTARD SEEDS 1KG                             1 -                                             0
+    EXTRA           CRUSH STRAWBERRY JUICE 1LTR                   1 -                                             0
+
+--- Gemini Result (Score: 0.0%) ---
+    Extra: 0 | Missed: 7
+    Status          LLM Item                                LLM Qty SAP Item                                SAP Qty
+    --------------------------------------------------------------------------------------------------------------
+
+====================================================================================================
+FAILURE #11: S18 | HARD | Failed by: Gemini
+Chat: Snow World & TJUK ORDERING
+Ship-to: PRASUK JAIN HOSPITALITY- KURLA (W)
+Expected items: 3
+----------------------------------------------------------------------------------------------------
+
+CUSTOMER MESSAGES:
+  MSG 1: Hi, this is SNOW WORLD ENTERTAINMENT, PRASUK JAIN HOSPITALITY, PRASUK JAIN HOSPITALITY PRIVATE LIMITED.
+
+Plz send tomorrow 
+Eggless buffermix 4kg
+Pls add..
+Red chilli powder 1 kg
+Turmeric powder 1 kg
+Cumin seeds 1 kg
+Mustard seeds 1 kg.
+Please add
+1. Crush strawberry 1 ltr- 1 btl
+2. Ice Cream vanilla 4 ltr (mother dairy) - 2 black
+Pls add..
+Baskin Robbins mississippi mud ice cream 100 ml (12 pcs)...2 box.
+Baskin Robbins cotton candy 100 ml (12 pcs)..2 box.
+Vanila icecream mother dairy 4 ltr...4 
+  MSG 2: Deliver to: PRASUK JAIN HOSPITALITY- KURLA (W)
+  MSG 3: Confirmed, looks good
+  MSG 5: Please output the order as valid JSON only. No other text.
+  MSG 8: Please output the corrected order as valid JSON only.
+  MSG 11: Please output the corrected order as valid JSON only.
+  MSG 14: Please output the corrected order as valid JSON only.
+
+--- Gemini Result (Score: 33.33%) ---
+    Extra: 2 | Missed: 1
+    Status          LLM Item                                LLM Qty SAP Item                                SAP Qty
+    --------------------------------------------------------------------------------------------------------------
+    QTY_MISMATCH    TULUA CUMIN WHOLE 1KG                       1.0 TULUA KASHMIRI CHILLI WHOLE 1KG             2.0
+    QTY_MISMATCH    PILLSBURY EGGLESS BROWNIE MIX 1KG           4.0 MANAMA STRAWBERRY CRUSH 1LTR                1.0
+    EXTRA           TULUA RED CHILLI POWDER HOT 1KG               1 -                                             0
+    EXTRA           TULUA TURMERIC POWDER 1KG                     1 -                                             0
+    MISSED          -                                             0 MOTHER DAIRY VANILLA PK(LOW FAT)4000        2.0
+
+====================================================================================================
+FAILURE #12: S20 | HARD | Failed by: Gemini
+Chat: Good Food Concept
+Ship-to: GOOD FOOD CONCEPT (BOMBAY GYMKHANA)
+Expected items: 4
+----------------------------------------------------------------------------------------------------
+
+CUSTOMER MESSAGES:
+  MSG 1: Hi, this is GOOD FOOD CONCEPT.
+
+6kg amul butter salted
+3kg amul cheese block
+2kg pizza cheese diced
+1 box amul fresh cream
+dadar parsee gymkhana outlet
+
+Delivery to: GOOD FOOD CONCEPT (BOMBAY GYMKHANA)
+  MSG 2: Confirmed, looks good
+  MSG 4: Please output the order as valid JSON only. No other text.
+
+--- Gemini Result (Score: 0.0%) ---
+    Extra: 0 | Missed: 4
+    Status          LLM Item                                LLM Qty SAP Item                                SAP Qty
+    --------------------------------------------------------------------------------------------------------------
+
+====================================================================================================
+FAILURE #13: S20 | HARD | Failed by: Haiku
+Chat: Good Food Concept
+Ship-to: GOOD FOOD CONCEPT( DADAR E)
+Expected items: 2
+----------------------------------------------------------------------------------------------------
+
+CUSTOMER MESSAGES:
+  MSG 1: Hi, this is GOOD FOOD CONCEPT.
+
+Kinley soda 2 box.
+Sprite 2.5 liter ka 1 box.
+Make it 2 box of amul fresh cream
+
+Delivery to: GOOD FOOD CONCEPT( DADAR E)
+  MSG 2: Yes, go with the closest match from your catalogue
+  MSG 3: Confirmed, looks good
+
+--- Haiku Result (Score: 28.57%) ---
+    Extra: 2 | Missed: 1
+    Status          LLM Item                                LLM Qty SAP Item                                SAP Qty
+    --------------------------------------------------------------------------------------------------------------
+    QTY_MISMATCH    DLECTA-CREAM CHEESE 1KG                    16.0 AMUL-CREAM 1LTR                            24.0
+    EXTRA           KINLEY CLUB SODA 750ML                       48 -                                             0
+    EXTRA           SPRITE 2.25 LTR                               9 -                                             0
+    MISSED          -                                             0 AMUL-BUTTER IP 500GMS                      12.0
+
+====================================================================================================
+FAILURE #14: S22 | HARD | Failed by: Haiku
+Chat: Cremure Order Group
+Ship-to: CREMURE (JOGESHWARI)
+Expected items: 3
+----------------------------------------------------------------------------------------------------
+
+CUSTOMER MESSAGES:
+  MSG 1: Hi, this is CREMURE.
+
+Jogeshwari
+Chocolate tea time 10kg
+
+Delivery to: CREMURE (JOGESHWARI)
+  MSG 2: Deliver to: CREMURE (JOGESHWARI)
+  MSG 3: Deliver to: CREMURE (JOGESHWARI)
+  MSG 4: Confirmed, looks good
+
+--- Haiku Result (Score: 28.57%) ---
+    Extra: 0 | Missed: 2
+    Status          LLM Item                                LLM Qty SAP Item                                SAP Qty
+    --------------------------------------------------------------------------------------------------------------
+    QTY_MISMATCH    PILLSBURY EGG FREE TEA TIME CHOCOLAT        2.0 PILLSBURY EGG FREE TEA TIME CHOCOLAT        8.0
+    MISSED          -                                             0 PILLSBURY EGG FREE TEA TIME VANILLA        12.0
+    MISSED          -                                             0 PILLSBURY EGG FREE CHOCOLATE 5KG.          36.0
+
+====================================================================================================
+FAILURE #15: S24 | HARD | Failed by: Haiku
+Chat: Snow World & TJUK ORDERING
+Ship-to: SNOW WORLD ENTERTAINMENT [NERUL E]
+Expected items: 4
+----------------------------------------------------------------------------------------------------
+
+CUSTOMER MESSAGES:
+  MSG 1: Hi, this is SNOW WORLD ENTERTAINMENT, PRASUK JAIN HOSPITALITY, PRASUK JAIN HOSPITALITY PRIVATE LIMITED.
+
+Pillsbury brownie order 16 kg received only 1 kg.
+T55 flour not received.
+PLZ CANCEL AMUL FRESH CREAM 
+ADD AMUL TAZZA MILK 24PKT @⁨Phone With Anushka⁩ @⁨Phone With Kumudini⁩
+1.SPINACH CHEESE CHICKPEA TIKKI -02 PKT
+2.MINI PUNJABI SAMOSA -02 PKT
+This material available
+@⁨Phone With Kumudini⁩ @⁨Phone With Anushka⁩
+Ok plz send 02 pkt
+
+Delivery to: SNOW WORLD ENTERTAINMENT [NERUL E]
+  MSG 2: Confirmed, looks good
+
+--- Haiku Result (Score: 30.0%) ---
+    Extra: 1 | Missed: 2
+    Status          LLM Item                                LLM Qty SAP Item                                SAP Qty
+    --------------------------------------------------------------------------------------------------------------
+    QTY_MISMATCH    AMUL TAAZA TONED MILK 1LTR                 24.0 AMUL TAAZA TONED MILK 1LTR                 12.0
+    QTY_MISMATCH    SPINACH CHEESE CHICKPEA TIKKI               2.0 AMUL-PROCESSED CHEESE BLOCK 1KG             5.0
+    EXTRA           MINI PUNJABI SAMOSA                           2 -                                             0
+    MISSED          -                                             0 AMUL-BUTTER IP 500GMS                      20.0
+    MISSED          -                                             0 AMUL-CREAM 1LTR                            24.0
+
+====================================================================================================
+FAILURE #16: S25 | HARD | Failed by: Haiku
+Chat: Kulturd Kombucha
+Ship-to: KEPCHAKI MOMO-BANDRA.W
+Expected items: 3
+----------------------------------------------------------------------------------------------------
+
+CUSTOMER MESSAGES:
+  MSG 1: Hi, this is KEPCHAKI MOMO.
+
+*Kepchaki momo order* 
+*bandra outlet*
+5 boxes of peach
+3 boxes of ginger lemon grass
+4 boxes lychee lemonade
+all sku 215ml
+@⁨Official Phone With sweta⁩
+TOAST PASTA BAR ORDER,lower parale (FOOD BY DEVIKA) 
+1 case of peach kombucha
+1 case of Elderflower and melon kombucha
+all sku 215ml
+@⁨Official Phone With sweta⁩ kindly make sure you punch it for the correct location.
+*MASA BAKERY ORDER* (WHISK WITH US LLP)
+48 pcs Lychee
+24 pcs Peach
+ALL SKU 215ML
+@⁨Official Phone Wit
+  MSG 2: Deliver to: KEPCHAKI MOMO-BANDRA.W
+  MSG 3: Deliver to: KEPCHAKI MOMO-BANDRA.W
+  MSG 4: Yes, go with the closest match from your catalogue
+  MSG 5: Confirmed, looks good
+
+--- Haiku Result (Score: 71.43%) ---
+    Extra: 0 | Missed: 0
+    Status          LLM Item                                LLM Qty SAP Item                                SAP Qty
+    --------------------------------------------------------------------------------------------------------------
+    QTY_MISMATCH    KULTUR'D KOMBUCHA PEACH 215ML(BROWN        96.0 KULTUR'D KOMBUCHA PEACH 215ML(WHITE        60.0
+    MATCH           KULTUR'D KOMBUCHA GINGER LEMONGRASS        36.0 KULTUR'D KOMBUCHA GINGER LEMONGRASS        36.0
+    QTY_MISMATCH    KULTUR'D KOMBUCHA LYCHEE LEMONADE 21      108.0 KULTUR'D KOMBUCHA LYCHEE LEMONADE 21       48.0

@@ -1,0 +1,1682 @@
+[
+  {
+    "scenario_id": "S09",
+    "difficulty": "MEDIUM",
+    "chat_name": "Good Food Concept",
+    "ship_to": "GOOD FOOD CONCEPT (BOMBAY GYMKHANA)",
+    "target_count": 2,
+    "model": "claude-haiku-4-5-20251001",
+    "t2_score": 27.27,
+    "extra": 6,
+    "missed": 0,
+    "customer_messages": [
+      {
+        "text": "Hi, this is GOOD FOOD CONCEPT.\n\nGowardhan prrosed block cheese hard 1 box.\nKinley soda 3 box.\nSprite 2.5 liter ka 2 box.\nDiet coke 3 box.\nTonik water 2 box.\nCoke 2.5 liter ka 1 box.\nDelecta cream cheese 1 box.\nButter 1 box.\nAdd samosa patti 1 box.\n\nDelivery to: GOOD FOOD CONCEPT (BOMBAY GYMKHANA)"
+      },
+      {
+        "text": "Deliver to: GOOD FOOD CONCEPT (BOMBAY GYMKHANA)"
+      },
+      {
+        "text": "Yes, go with the closest match from your catalogue"
+      },
+      {
+        "text": "Yes, that's correct"
+      },
+      {
+        "text": "Confirmed, looks good"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please correct the following:\n  - GO SLICES CHEESE 750GMS quantity should be 6 PCS, not 12\n  - AMUL-PROCESSED CHEESE BLOCK 1KG quantity should be 12 PCS, not 40\n  - Remove KINLEY CLUB SODA 750ML \u2014 I didn't order that\n  - Remove SPRITE 2.25 LTR \u2014 I didn't order that\n  - Remove COKE DIET CAN 300ML(DKO) \u2014 I didn't order that\n  - Remove COKE 2.25 LTR \u2014 I didn't order that\n  - Remove DLECTA-CREAM CHEESE 1KG \u2014 I didn't order that\n  - Remove SWITZ SAMOSA PATTI 3/10 500GMS(REGULAR) \u2014 I didn't order that"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please correct the following:\n  - GO SLICES CHEESE 750GMS quantity should be 6 PCS, not 12\n  - AMUL-PROCESSED CHEESE BLOCK 1KG quantity should be 12 PCS, not 40\n  - Remove KINLEY CLUB SODA 750ML \u2014 I didn't order that\n  - Remove SPRITE 2.25 LTR \u2014 I didn't order that\n  - Remove COKE DIET CAN 300ML(DKO) \u2014 I didn't order that\n  - Remove COKE 2.25 LTR \u2014 I didn't order that\n  - Remove DLECTA-CREAM CHEESE 1KG \u2014 I didn't order that\n  - Remove SWITZ SAMOSA PATTI 3/10 500GMS(REGULAR) \u2014 I didn't order that"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please correct the following:\n  - GO SLICES CHEESE 750GMS quantity should be 6 PCS, not 12\n  - AMUL-PROCESSED CHEESE BLOCK 1KG quantity should be 12 PCS, not 40\n  - Remove KINLEY CLUB SODA 750ML \u2014 I didn't order that\n  - Remove SPRITE 2.25 LTR \u2014 I didn't order that\n  - Remove COKE DIET CAN 300ML(DKO) \u2014 I didn't order that\n  - Remove COKE 2.25 LTR \u2014 I didn't order that\n  - Remove DLECTA-CREAM CHEESE 1KG \u2014 I didn't order that\n  - Remove SWITZ SAMOSA PATTI 3/10 500GMS(REGULAR) \u2014 I didn't order that"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      }
+    ],
+    "sap_expected": [],
+    "llm_output": [],
+    "details": [
+      {
+        "status": "QTY_MISMATCH",
+        "llm_item": "GOWARDHAN PROCESSED CHEESE 1KG(HARD)",
+        "llm_code": "P04IP17G07PRO002",
+        "llm_qty": 12.0,
+        "sap_item": "GO SLICES CHEESE 750GMS",
+        "sap_code": "P04IP17G08SLI001",
+        "sap_qty": 6.0,
+        "match_score": 0.6875,
+        "conversion": "1 box \u00d7 12 pcs/box = 12 PCS"
+      },
+      {
+        "status": "QTY_MISMATCH",
+        "llm_item": "AMUL-BUTTER IP 500GMS",
+        "llm_code": "J01IS06A02BUT001",
+        "llm_qty": 40.0,
+        "sap_item": "AMUL-PROCESSED CHEESE BLOCK 1KG",
+        "sap_code": "J01IP17A02CHE001",
+        "sap_qty": 12.0,
+        "match_score": 0.625,
+        "conversion": "1 box \u00d7 40 pcs/box = 40 PCS"
+      },
+      {
+        "status": "EXTRA",
+        "llm_item": "KINLEY CLUB SODA 750ML",
+        "llm_code": "T28IC03K09SOD001",
+        "llm_qty": 72,
+        "sap_item": "-",
+        "sap_code": "-",
+        "sap_qty": 0,
+        "match_score": 0
+      },
+      {
+        "status": "EXTRA",
+        "llm_item": "SPRITE 2.25 LTR",
+        "llm_code": "T28IC03S09SPR005",
+        "llm_qty": 18,
+        "sap_item": "-",
+        "sap_code": "-",
+        "sap_qty": 0,
+        "match_score": 0
+      },
+      {
+        "status": "EXTRA",
+        "llm_item": "COKE DIET CAN 300ML(DKO)",
+        "llm_code": "T28IC03C42COK003",
+        "llm_qty": 72,
+        "sap_item": "-",
+        "sap_code": "-",
+        "sap_qty": 0,
+        "match_score": 0
+      },
+      {
+        "status": "EXTRA",
+        "llm_item": "COKE 2.25 LTR",
+        "llm_code": "T28IC03C42COK008",
+        "llm_qty": 9,
+        "sap_item": "-",
+        "sap_code": "-",
+        "sap_qty": 0,
+        "match_score": 0
+      },
+      {
+        "status": "EXTRA",
+        "llm_item": "DLECTA-CREAM CHEESE 1KG",
+        "llm_code": "D13IP17D31CRE003",
+        "llm_qty": 8,
+        "sap_item": "-",
+        "sap_code": "-",
+        "sap_qty": 0,
+        "match_score": 0
+      },
+      {
+        "status": "EXTRA",
+        "llm_item": "SWITZ SAMOSA PATTI 3/10 500GMS(REGULAR)",
+        "llm_code": "S07IP11S17SAM001",
+        "llm_qty": 30,
+        "sap_item": "-",
+        "sap_code": "-",
+        "sap_qty": 0,
+        "match_score": 0
+      }
+    ]
+  },
+  {
+    "scenario_id": "S09",
+    "difficulty": "MEDIUM",
+    "chat_name": "Good Food Concept",
+    "ship_to": "GOOD FOOD CONCEPT-MAHIM.W",
+    "target_count": 4,
+    "model": "claude-haiku-4-5-20251001",
+    "t2_score": 35.71,
+    "extra": 5,
+    "missed": 0,
+    "customer_messages": [
+      {
+        "text": "Hi, this is GOOD FOOD CONCEPT.\n\nGowardhan prrosed block cheese hard 1 box.\nKinley soda 3 box.\nSprite 2.5 liter ka 2 box.\nDiet coke 3 box.\nTonik water 2 box.\nCoke 2.5 liter ka 1 box.\nDelecta cream cheese 1 box.\nButter 1 box.\nAdd samosa patti 1 box.\n\nDelivery to: GOOD FOOD CONCEPT-MAHIM.W"
+      },
+      {
+        "text": "Deliver to: GOOD FOOD CONCEPT-MAHIM.W"
+      },
+      {
+        "text": "Please show me the complete order summary for confirmation."
+      },
+      {
+        "text": "Confirmed, looks good"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please correct the following:\n  - AMUL-BUTTER IP 500GMS quantity should be 15 PCS, not 40\n  - GO MOZZARELLA CHEESE DICE 2KG(IQF) quantity should be 2 PCS, not 12\n  - GO SLICES CHEESE 750GMS quantity should be 3 PCS, not 30\n  - INDIBITES-MINI PUNJABI SAMOSA 1KG quantity should be 2 PCS, not 8\n  - Remove KINLEY CLUB SODA 750ML \u2014 I didn't order that\n  - Remove SPRITE 2.25 LTR \u2014 I didn't order that\n  - Remove COKE DIET CAN 300ML(DKO) \u2014 I didn't order that\n  - Remove TONIC WATER \u2014 I didn't order that"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please correct the following:\n  - AMUL-BUTTER IP 500GMS quantity should be 15 PCS, not 40\n  - GO MOZZARELLA CHEESE DICE 2KG(IQF) quantity should be 2 PCS, not 12\n  - GO SLICES CHEESE 750GMS quantity should be 3 PCS, not 30\n  - INDIBITES-MINI PUNJABI SAMOSA 1KG quantity should be 2 PCS, not 8\n  - Remove KINLEY CLUB SODA 750ML \u2014 I didn't order that\n  - Remove SPRITE 2.25 LTR \u2014 I didn't order that\n  - Remove COKE DIET CAN 300ML(DKO) \u2014 I didn't order that\n  - Remove TONIC WATER \u2014 I didn't order that"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please correct the following:\n  - AMUL-BUTTER IP 500GMS quantity should be 15 PCS, not 40\n  - GO MOZZARELLA CHEESE DICE 2KG(IQF) quantity should be 2 PCS, not 12\n  - GO SLICES CHEESE 750GMS quantity should be 3 PCS, not 30\n  - INDIBITES-MINI PUNJABI SAMOSA 1KG quantity should be 2 PCS, not 8\n  - Remove KINLEY CLUB SODA 750ML \u2014 I didn't order that\n  - Remove SPRITE 2.25 LTR \u2014 I didn't order that\n  - Remove COKE DIET CAN 300ML(DKO) \u2014 I didn't order that\n  - Remove TONIC WATER \u2014 I didn't order that"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      }
+    ],
+    "sap_expected": [],
+    "llm_output": [],
+    "details": [
+      {
+        "status": "QTY_MISMATCH",
+        "llm_item": "AMUL-BUTTER IP 500GMS",
+        "llm_code": "J01IS06A02BUT001",
+        "llm_qty": 40.0,
+        "sap_item": "AMUL-BUTTER IP 500GMS",
+        "sap_code": "J01IS06A02BUT001",
+        "sap_qty": 15.0,
+        "match_score": 1.0,
+        "conversion": "1 box \u00d7 40 pcs/box = 40 PCS"
+      },
+      {
+        "status": "QTY_MISMATCH",
+        "llm_item": "GOWARDHAN PROCESSED CHEESE 1KG(HARD)",
+        "llm_code": "P04IP17G07PRO002",
+        "llm_qty": 12.0,
+        "sap_item": "GO MOZZARELLA CHEESE DICE 2KG(IQF)",
+        "sap_code": "P04IP17G08MOZ005",
+        "sap_qty": 2.0,
+        "match_score": 0.75,
+        "conversion": "1 box \u00d7 12 pcs/box = 12 PCS"
+      },
+      {
+        "status": "QTY_MISMATCH",
+        "llm_item": "SWITZ SAMOSA PATTI 3/10 500GMS(REGULAR)",
+        "llm_code": "S07IP11S17SAM001",
+        "llm_qty": 30.0,
+        "sap_item": "GO SLICES CHEESE 750GMS",
+        "sap_code": "P04IP17G08SLI001",
+        "sap_qty": 3.0,
+        "match_score": 0.5,
+        "conversion": "1 box \u00d7 30 pcs/box = 30 PCS"
+      },
+      {
+        "status": "QTY_MISMATCH",
+        "llm_item": "DLECTA-CREAM CHEESE 1KG",
+        "llm_code": "D13IP17D31CRE003",
+        "llm_qty": 8.0,
+        "sap_item": "INDIBITES-MINI PUNJABI SAMOSA 1KG",
+        "sap_code": "H13IA01I15MIN001",
+        "sap_qty": 2.0,
+        "match_score": 0.4375,
+        "conversion": "1 box \u00d7 8 pcs/box = 8 PCS"
+      },
+      {
+        "status": "EXTRA",
+        "llm_item": "KINLEY CLUB SODA 750ML",
+        "llm_code": "T28IC03K09SOD001",
+        "llm_qty": 72,
+        "sap_item": "-",
+        "sap_code": "-",
+        "sap_qty": 0,
+        "match_score": 0
+      },
+      {
+        "status": "EXTRA",
+        "llm_item": "SPRITE 2.25 LTR",
+        "llm_code": "T28IC03S09SPR005",
+        "llm_qty": 18,
+        "sap_item": "-",
+        "sap_code": "-",
+        "sap_qty": 0,
+        "match_score": 0
+      },
+      {
+        "status": "EXTRA",
+        "llm_item": "COKE DIET CAN 300ML(DKO)",
+        "llm_code": "T28IC03C42COK003",
+        "llm_qty": 72,
+        "sap_item": "-",
+        "sap_code": "-",
+        "sap_qty": 0,
+        "match_score": 0
+      },
+      {
+        "status": "EXTRA",
+        "llm_item": "TONIC WATER",
+        "llm_code": "UNKNOWN",
+        "llm_qty": 2,
+        "sap_item": "-",
+        "sap_code": "-",
+        "sap_qty": 0,
+        "match_score": 0
+      },
+      {
+        "status": "EXTRA",
+        "llm_item": "COKE 2.25 LTR",
+        "llm_code": "T28IC03C42COK008",
+        "llm_qty": 9,
+        "sap_item": "-",
+        "sap_code": "-",
+        "sap_qty": 0,
+        "match_score": 0
+      }
+    ]
+  },
+  {
+    "scenario_id": "S12",
+    "difficulty": "MEDIUM",
+    "chat_name": "Urban Gourmet UGIPL",
+    "ship_to": "URBAN GOURMET INDIA PVT LTD (27 BAKE HOUSE)",
+    "target_count": 5,
+    "model": "claude-haiku-4-5-20251001",
+    "t2_score": 90.91,
+    "extra": 0,
+    "missed": 0,
+    "customer_messages": [
+      {
+        "text": "Hi, this is URBAN GOURMET INDIA PRIVATE LIMITED (27 BAKE HOUSE), URBAN GOURMET INDIA PRIVATE LIMITED.\n\nPlease send govandi central kitchen \nDite coke 6 case\nThumsup 2 case\nGinger ale 3 case\nRegards\nYogesh\nUrban Gourmet Ind Pvt Ltd-G27 Bakery Govandi Deonar\nPlease add more \nThumsup 8 case\nDite coke 4 case\nGinger ale 8 case\nRegular coke 6 case\nSprite 2 case\nTonic water 2 case"
+      },
+      {
+        "text": "Confirmed, looks good"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please correct the following:\n  - Remove THUMS UP CAN 300ML \u2014 I didn't order that"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      }
+    ],
+    "sap_expected": [],
+    "llm_output": [],
+    "details": [
+      {
+        "status": "MATCH",
+        "llm_item": "COKE DIET CAN 300ML(DKO)",
+        "llm_code": "T28IC03C42COK003",
+        "llm_qty": 240.0,
+        "sap_item": "COKE DIET CAN 300ML(DKO)",
+        "sap_code": "T28IC03C42COK003",
+        "sap_qty": 240.0,
+        "match_score": 1.0,
+        "conversion": "10 cases \u00d7 24 pcs/case = 240 PCS"
+      },
+      {
+        "status": "MATCH",
+        "llm_item": "SCHWEPPES GINGER ALE CAN 300ML(SGA)",
+        "llm_code": "T28IC03S07GIN001",
+        "llm_qty": 264.0,
+        "sap_item": "SCHWEPPES GINGER ALE  CAN 300ML(SGA)",
+        "sap_code": "T28IC03S07GIN001",
+        "sap_qty": 264.0,
+        "match_score": 1.0,
+        "conversion": "11 cases \u00d7 24 pcs/case = 264 PCS"
+      },
+      {
+        "status": "MATCH",
+        "llm_item": "COKE CAN 300ML(KO)",
+        "llm_code": "T28IC03C42COK002",
+        "llm_qty": 144.0,
+        "sap_item": "COKE CAN 300ML(KO)",
+        "sap_code": "T28IC03C42COK002",
+        "sap_qty": 144.0,
+        "match_score": 1.0,
+        "conversion": "6 cases \u00d7 24 pcs/case = 144 PCS"
+      },
+      {
+        "status": "MATCH",
+        "llm_item": "SPRITE CAN 300ML(SP)",
+        "llm_code": "T28IC03S09SPR001",
+        "llm_qty": 48.0,
+        "sap_item": "SPRITE CAN 300ML(SP)",
+        "sap_code": "T28IC03S09SPR001",
+        "sap_qty": 48.0,
+        "match_score": 1.0,
+        "conversion": "2 cases \u00d7 24 pcs/case = 48 PCS"
+      },
+      {
+        "status": "MATCH",
+        "llm_item": "SCHWEPPES TONIC WATER CAN 300ML(STW)",
+        "llm_code": "T28IC03S07TON001",
+        "llm_qty": 48.0,
+        "sap_item": "SCHWEPPES TONIC WATER CAN 300ML(STW)",
+        "sap_code": "T28IC03S07TON001",
+        "sap_qty": 48.0,
+        "match_score": 1.0,
+        "conversion": "2 cases \u00d7 24 pcs/case = 48 PCS"
+      }
+    ]
+  },
+  {
+    "scenario_id": "S15",
+    "difficulty": "MEDIUM",
+    "chat_name": "BAWA GROUP ORDERING",
+    "ship_to": "HOTEL BAWA REGENCY",
+    "target_count": 2,
+    "model": "claude-haiku-4-5-20251001",
+    "t2_score": 23.08,
+    "extra": 8,
+    "missed": 0,
+    "customer_messages": [
+      {
+        "text": "Hi, this is KIRAN BAWA HOTELS PVT LTD..\n\nAmul Prossd Cheese Block - 06 kg\nAmul Butter IP - 01Box\nEpigamia Almond Milk 1ltr - 12 pkt\nKnorr Chicken Broth Powder 500 grm - 02 pkt\n*Vijaydeep Hotel Pvt Ltd*\n*Vile Parle East*\nPlss coke 750 ml 1 case\nVijaydeep Hotel Pvt Ltd \nHotel Bawa Continatal\nJuhu Tara Road\nVanilla ice cream 2 bulk\nAmul cheese 1 kg\nCooking rich Cream 4 pkt\nSprite can 1 box\nKinly soda 1 box"
+      },
+      {
+        "text": "Deliver to: HOTEL BAWA REGENCY"
+      },
+      {
+        "text": "Confirmed, looks good"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please output the order as valid JSON only. No other text."
+      },
+      {
+        "text": "Please correct the following:\n  - AMUL-CREAM 1LTR quantity should be 12 PCS, not 6\n  - GO SLICES CHEESE 750GMS quantity should be 10 PCS, not 1\n  - Remove AMUL-BUTTER IP 500GMS \u2014 I didn't order that\n  - Remove EPIGAMIA ALMOND MILK 1LTR \u2014 I didn't order that\n  - Remove KNORR CHICKEN BROTH POWDER 500GRM \u2014 I didn't order that\n  - Remove COKE 750ML \u2014 I didn't order that\n  - Remove VANILLA ICE CREAM \u2014 I didn't order that\n  - Remove COOKING RICH CREAM \u2014 I didn't order that\n  - Remove SPRITE CAN \u2014 I di"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please correct the following:\n  - AMUL-CREAM 1LTR quantity should be 12 PCS, not 6\n  - GO SLICES CHEESE 750GMS quantity should be 10 PCS, not 1\n  - Remove AMUL-BUTTER IP 500GMS \u2014 I didn't order that\n  - Remove EPIGAMIA ALMOND MILK 1LTR \u2014 I didn't order that\n  - Remove KNORR CHICKEN BROTH POWDER 500GRM \u2014 I didn't order that\n  - Remove COKE 750ML \u2014 I didn't order that\n  - Remove VANILLA ICE CREAM \u2014 I didn't order that\n  - Remove COOKING RICH CREAM \u2014 I didn't order that\n  - Remove SPRITE CAN \u2014 I di"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please correct the following:\n  - AMUL-CREAM 1LTR quantity should be 12 PCS, not 6\n  - GO SLICES CHEESE 750GMS quantity should be 10 PCS, not 1\n  - Remove AMUL-BUTTER IP 500GMS \u2014 I didn't order that\n  - Remove EPIGAMIA ALMOND MILK 1LTR \u2014 I didn't order that\n  - Remove KNORR CHICKEN BROTH POWDER 500GRM \u2014 I didn't order that\n  - Remove COKE 750ML \u2014 I didn't order that\n  - Remove VANILLA ICE CREAM \u2014 I didn't order that\n  - Remove COOKING RICH CREAM \u2014 I didn't order that\n  - Remove SPRITE CAN \u2014 I di"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      }
+    ],
+    "sap_expected": [],
+    "llm_output": [],
+    "details": [
+      {
+        "status": "QTY_MISMATCH",
+        "llm_item": "AMUL-PROCESSED CHEESE BLOCK 1KG",
+        "llm_code": "J01IP17A02CHE001",
+        "llm_qty": 6.0,
+        "sap_item": "AMUL-CREAM 1LTR",
+        "sap_code": "J01IC21A02CRE001",
+        "sap_qty": 12.0,
+        "match_score": 0.8125,
+        "conversion": "6 kg \u00f7 1 kg per unit = 6 PCS"
+      },
+      {
+        "status": "QTY_MISMATCH",
+        "llm_item": "AMUL-PROCESSED CHEESE BLOCK 1KG",
+        "llm_code": "J01IP17A02CHE001",
+        "llm_qty": 1.0,
+        "sap_item": "GO SLICES CHEESE 750GMS",
+        "sap_code": "P04IP17G08SLI001",
+        "sap_qty": 10.0,
+        "match_score": 0.5625,
+        "conversion": "1 kg \u00f7 1 kg per unit = 1 PCS"
+      },
+      {
+        "status": "EXTRA",
+        "llm_item": "AMUL-BUTTER IP 500GMS",
+        "llm_code": "J01IS06A02BUT001",
+        "llm_qty": 40,
+        "sap_item": "-",
+        "sap_code": "-",
+        "sap_qty": 0,
+        "match_score": 0
+      },
+      {
+        "status": "EXTRA",
+        "llm_item": "EPIGAMIA ALMOND MILK 1LTR",
+        "llm_code": "UNKNOWN",
+        "llm_qty": 12,
+        "sap_item": "-",
+        "sap_code": "-",
+        "sap_qty": 0,
+        "match_score": 0
+      },
+      {
+        "status": "EXTRA",
+        "llm_item": "KNORR CHICKEN BROTH POWDER 500GRM",
+        "llm_code": "UNKNOWN",
+        "llm_qty": 2,
+        "sap_item": "-",
+        "sap_code": "-",
+        "sap_qty": 0,
+        "match_score": 0
+      },
+      {
+        "status": "EXTRA",
+        "llm_item": "COKE 750ML",
+        "llm_code": "UNKNOWN",
+        "llm_qty": 24,
+        "sap_item": "-",
+        "sap_code": "-",
+        "sap_qty": 0,
+        "match_score": 0
+      },
+      {
+        "status": "EXTRA",
+        "llm_item": "VANILLA ICE CREAM",
+        "llm_code": "UNKNOWN",
+        "llm_qty": 2,
+        "sap_item": "-",
+        "sap_code": "-",
+        "sap_qty": 0,
+        "match_score": 0
+      },
+      {
+        "status": "EXTRA",
+        "llm_item": "COOKING RICH CREAM",
+        "llm_code": "UNKNOWN",
+        "llm_qty": 4,
+        "sap_item": "-",
+        "sap_code": "-",
+        "sap_qty": 0,
+        "match_score": 0
+      },
+      {
+        "status": "EXTRA",
+        "llm_item": "SPRITE CAN",
+        "llm_code": "UNKNOWN",
+        "llm_qty": 24,
+        "sap_item": "-",
+        "sap_code": "-",
+        "sap_qty": 0,
+        "match_score": 0
+      },
+      {
+        "status": "EXTRA",
+        "llm_item": "KINLEY SODA",
+        "llm_code": "UNKNOWN",
+        "llm_qty": 24,
+        "sap_item": "-",
+        "sap_code": "-",
+        "sap_qty": 0,
+        "match_score": 0
+      }
+    ]
+  },
+  {
+    "scenario_id": "S18",
+    "difficulty": "HARD",
+    "chat_name": "Snow World & TJUK ORDERING",
+    "ship_to": "POKKIDO JUNIOR",
+    "target_count": 7,
+    "model": "claude-haiku-4-5-20251001",
+    "t2_score": 66.67,
+    "extra": 3,
+    "missed": 0,
+    "customer_messages": [
+      {
+        "text": "Hi, this is SNOW WORLD ENTERTAINMENT, PRASUK JAIN HOSPITALITY, PRASUK JAIN HOSPITALITY PRIVATE LIMITED.\n\nOrder for 07/2/2026.\nFrench fries 15 pkt\nButter 3 kg\n*PRASUK JAIN HOSPITALITY PRIVATE LIMITED*\n*POKIDDO JUNIOR*\n11/12, Raghuvanshi Mill, Senapati Bapat Marg, Gandhi Nagar, Lower Parel West, Worli, Mumbai, Maharashtra 400013\nMob-9773723728.\n1. DAVINCI MOJITO MINT SYRUP - 4 BTL\n2. DAVINCI WATERMELON SYRUP - 3 BTL\n3. WHITE PEPPER POWDER - 2 PKT\n4. KASHMIRI CHILLI WHOLE - 5 PKT\n5. BLACK PEPPER WH"
+      },
+      {
+        "text": "Deliver to: POKKIDO JUNIOR"
+      },
+      {
+        "text": "Deliver to: POKKIDO JUNIOR"
+      },
+      {
+        "text": "Confirmed, looks good"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please correct the following:\n  - MOTHER DAIRY VANILLA PK(LOW FAT)4000ML quantity should be 4 PCS, not 2\n  - TULUA MUSTARD SEEDS1KG quantity should be 1 PCS, not 5\n  - BASKIN-MISSISIPPI MUD ICE CREAM 100ML(12) quantity should be 2 PCS, not 15\n  - BASKIN-COTTON CANDY ICE CREAM 100ML(12PC) quantity should be 2 PCS, not 4\n  - Remove DAVINCI WATERMELON SYRUP \u2014 I didn't order that\n  - Remove WHITE PEPPER POWDER \u2014 I didn't order that\n  - Remove TULUA BLACK PEPPER WHOLE 1KG \u2014 I didn't order that\n  - Re"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please correct the following:\n  - TULUA MUSTARD SEEDS1KG quantity should be 1 PCS, not 5\n  - BASKIN-MISSISIPPI MUD ICE CREAM 100ML(12) quantity should be 2 PCS, not 15\n  - BASKIN-COTTON CANDY ICE CREAM 100ML(12PC) quantity should be 2 PCS, not 4\n  - Remove TULUA CUMIN WHOLE 1KG \u2014 I didn't order that\n  - Remove MUSTARD SEEDS 1KG \u2014 I didn't order that\n  - Remove CRUSH STRAWBERRY JUICE 1LTR \u2014 I didn't order that"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please correct the following:\n  - TULUA MUSTARD SEEDS1KG quantity should be 1 PCS, not 5\n  - BASKIN-MISSISIPPI MUD ICE CREAM 100ML(12) quantity should be 2 PCS, not 15\n  - BASKIN-COTTON CANDY ICE CREAM 100ML(12PC) quantity should be 2 PCS, not 4\n  - Remove TULUA CUMIN WHOLE 1KG \u2014 I didn't order that"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      }
+    ],
+    "sap_expected": [],
+    "llm_output": [],
+    "details": [
+      {
+        "status": "MATCH",
+        "llm_item": "AMUL-BUTTER IP 500GMS",
+        "llm_code": "J01IS06A02BUT001",
+        "llm_qty": 6.0,
+        "sap_item": "AMUL-BUTTER IP 500GMS",
+        "sap_code": "J01IS06A02BUT001",
+        "sap_qty": 6.0,
+        "match_score": 1.0,
+        "conversion": "3 kg \u00f7 0.5 kg per unit = 6 PCS"
+      },
+      {
+        "status": "MATCH",
+        "llm_item": "TULUA RED CHILLI POWDER HOT 1KG",
+        "llm_code": "T17IS11T61RED001",
+        "llm_qty": 1.0,
+        "sap_item": "TULUA RED CHILLI POWDER HOT 1KG",
+        "sap_code": "T17IS11T61RED001",
+        "sap_qty": 1.0,
+        "match_score": 1.0,
+        "conversion": "1 kg \u00f7 1.0 kg per unit = 1 PCS"
+      },
+      {
+        "status": "MATCH",
+        "llm_item": "TULUA TURMERIC POWDER 1KG",
+        "llm_code": "T17IS11T61TUR001",
+        "llm_qty": 1.0,
+        "sap_item": "TULUA TURMERIC POWDER 1KG",
+        "sap_code": "T17IS11T61TUR001",
+        "sap_qty": 1.0,
+        "match_score": 1.0,
+        "conversion": "1 kg \u00f7 1.0 kg per unit = 1 PCS"
+      },
+      {
+        "status": "MATCH",
+        "llm_item": "MOTHER DAIRY VANILLA PK(LOW FAT)4000ML",
+        "llm_code": "M05II01M11VAN002",
+        "llm_qty": 4.0,
+        "sap_item": "MOTHER DAIRY VANILLA PK(LOW FAT)4000ML",
+        "sap_code": "M05II01M11VAN002",
+        "sap_qty": 4.0,
+        "match_score": 1.0,
+        "conversion": "4 units = 4 PCS (direct)"
+      },
+      {
+        "status": "QTY_MISMATCH",
+        "llm_item": "TULUA KASHMIRI CHILLI WHOLE 1KG",
+        "llm_code": "T17IS12T61KAS001",
+        "llm_qty": 5.0,
+        "sap_item": "TULUA MUSTARD SEEDS1KG",
+        "sap_code": "T17IS12T61MUS001",
+        "sap_qty": 1.0,
+        "match_score": 0.875,
+        "conversion": "5 pkt = 5 PCS (direct)"
+      },
+      {
+        "status": "QTY_MISMATCH",
+        "llm_item": "MC CAINS F.F.-MC ST.CUT 9MM*9MM 2.5KG",
+        "llm_code": "M02IF03M04FF9001",
+        "llm_qty": 15.0,
+        "sap_item": "BASKIN-MISSISIPPI MUD ICE CREAM 100ML(12)",
+        "sap_code": "G06RI06B03MIS002",
+        "sap_qty": 2.0,
+        "match_score": 0.4375,
+        "conversion": "15 pkt = 15 PCS (direct)"
+      },
+      {
+        "status": "QTY_MISMATCH",
+        "llm_item": "DAVINCI GOURMET MOJITO MENTA CUBANO SYRUP 750ML",
+        "llm_code": "K11IS09D28MME001",
+        "llm_qty": 4.0,
+        "sap_item": "BASKIN-COTTON CANDY ICE CREAM 100ML(12PC)",
+        "sap_code": "G06RI06B03COT002",
+        "sap_qty": 2.0,
+        "match_score": 0.4318181818181818,
+        "conversion": "4 btl = 4 PCS (direct)"
+      },
+      {
+        "status": "EXTRA",
+        "llm_item": "TULUA CUMIN WHOLE 1KG",
+        "llm_code": "T17IS12T61CUM001",
+        "llm_qty": 1,
+        "sap_item": "-",
+        "sap_code": "-",
+        "sap_qty": 0,
+        "match_score": 0
+      },
+      {
+        "status": "EXTRA",
+        "llm_item": "MUSTARD SEEDS 1KG",
+        "llm_code": "UNKNOWN",
+        "llm_qty": 1,
+        "sap_item": "-",
+        "sap_code": "-",
+        "sap_qty": 0,
+        "match_score": 0
+      },
+      {
+        "status": "EXTRA",
+        "llm_item": "CRUSH STRAWBERRY JUICE 1LTR",
+        "llm_code": "UNKNOWN",
+        "llm_qty": 1,
+        "sap_item": "-",
+        "sap_code": "-",
+        "sap_qty": 0,
+        "match_score": 0
+      }
+    ]
+  },
+  {
+    "scenario_id": "S20",
+    "difficulty": "HARD",
+    "chat_name": "Good Food Concept",
+    "ship_to": "GOOD FOOD CONCEPT( DADAR E)",
+    "target_count": 2,
+    "model": "claude-haiku-4-5-20251001",
+    "t2_score": 28.57,
+    "extra": 2,
+    "missed": 1,
+    "customer_messages": [
+      {
+        "text": "Hi, this is GOOD FOOD CONCEPT.\n\nKinley soda 2 box.\nSprite 2.5 liter ka 1 box.\nMake it 2 box of amul fresh cream\n\nDelivery to: GOOD FOOD CONCEPT( DADAR E)"
+      },
+      {
+        "text": "Yes, go with the closest match from your catalogue"
+      },
+      {
+        "text": "Confirmed, looks good"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please correct the following:\n  - AMUL-CREAM 1LTR quantity should be 24 PCS, not 16\n  - Remove KINLEY CLUB SODA 750ML \u2014 I didn't order that\n  - Remove SPRITE 2.25 LTR \u2014 I didn't order that\n  - Missing item: AMUL-BUTTER IP 500GMS \u2014 need 12 PCS"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please correct the following:\n  - AMUL-CREAM 1LTR quantity should be 24 PCS, not 16\n  - Remove KINLEY CLUB SODA 750ML \u2014 I didn't order that\n  - Remove SPRITE 2.25 LTR \u2014 I didn't order that\n  - Missing item: AMUL-BUTTER IP 500GMS \u2014 need 12 PCS"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please correct the following:\n  - AMUL-CREAM 1LTR quantity should be 24 PCS, not 16\n  - Remove KINLEY CLUB SODA 750ML \u2014 I didn't order that\n  - Remove SPRITE 2.25 LTR \u2014 I didn't order that\n  - Missing item: AMUL-BUTTER IP 500GMS \u2014 need 12 PCS"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      }
+    ],
+    "sap_expected": [],
+    "llm_output": [],
+    "details": [
+      {
+        "status": "QTY_MISMATCH",
+        "llm_item": "DLECTA-CREAM CHEESE 1KG",
+        "llm_code": "D13IP17D31CRE003",
+        "llm_qty": 16.0,
+        "sap_item": "AMUL-CREAM 1LTR",
+        "sap_code": "J01IC21A02CRE001",
+        "sap_qty": 24.0,
+        "match_score": 0.5,
+        "conversion": "2 boxes \u00d7 8 pcs/box = 16 PCS"
+      },
+      {
+        "status": "EXTRA",
+        "llm_item": "KINLEY CLUB SODA 750ML",
+        "llm_code": "T28IC03K09SOD001",
+        "llm_qty": 48,
+        "sap_item": "-",
+        "sap_code": "-",
+        "sap_qty": 0,
+        "match_score": 0
+      },
+      {
+        "status": "EXTRA",
+        "llm_item": "SPRITE 2.25 LTR",
+        "llm_code": "T28IC03S09SPR005",
+        "llm_qty": 9,
+        "sap_item": "-",
+        "sap_code": "-",
+        "sap_qty": 0,
+        "match_score": 0
+      },
+      {
+        "status": "MISSED",
+        "llm_item": "-",
+        "llm_code": "-",
+        "llm_qty": 0,
+        "sap_item": "AMUL-BUTTER IP 500GMS",
+        "sap_code": "J01IS06A02BUT001",
+        "sap_qty": 12.0,
+        "match_score": 0
+      }
+    ]
+  },
+  {
+    "scenario_id": "S22",
+    "difficulty": "HARD",
+    "chat_name": "Cremure Order Group",
+    "ship_to": "CREMURE (JOGESHWARI)",
+    "target_count": 3,
+    "model": "claude-haiku-4-5-20251001",
+    "t2_score": 28.57,
+    "extra": 0,
+    "missed": 2,
+    "customer_messages": [
+      {
+        "text": "Hi, this is CREMURE.\n\nJogeshwari\nChocolate tea time 10kg\n\nDelivery to: CREMURE (JOGESHWARI)"
+      },
+      {
+        "text": "Deliver to: CREMURE (JOGESHWARI)"
+      },
+      {
+        "text": "Deliver to: CREMURE (JOGESHWARI)"
+      },
+      {
+        "text": "Confirmed, looks good"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please correct the following:\n  - PILLSBURY EGG FREE TEA TIME CHOCOLATE 5KG quantity should be 8 PCS, not 2\n  - Missing item: PILLSBURY EGG FREE TEA TIME VANILLA 5KG \u2014 need 12 PCS\n  - Missing item: PILLSBURY EGG FREE CHOCOLATE 5KG. \u2014 need 36 PCS"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please correct the following:\n  - PILLSBURY EGG FREE TEA TIME CHOCOLATE 5KG quantity should be 8 PCS, not 2\n  - Missing item: PILLSBURY EGG FREE TEA TIME VANILLA 5KG \u2014 need 12 PCS\n  - Missing item: PILLSBURY EGG FREE CHOCOLATE 5KG. \u2014 need 36 PCS"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please correct the following:\n  - PILLSBURY EGG FREE TEA TIME CHOCOLATE 5KG quantity should be 8 PCS, not 2\n  - Missing item: PILLSBURY EGG FREE TEA TIME VANILLA 5KG \u2014 need 12 PCS\n  - Missing item: PILLSBURY EGG FREE CHOCOLATE 5KG. \u2014 need 36 PCS"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      }
+    ],
+    "sap_expected": [],
+    "llm_output": [],
+    "details": [
+      {
+        "status": "QTY_MISMATCH",
+        "llm_item": "PILLSBURY EGG FREE TEA TIME CHOCOLATE 5KG",
+        "llm_code": "G01IC01P06ETC001",
+        "llm_qty": 2.0,
+        "sap_item": "PILLSBURY EGG FREE TEA TIME CHOCOLATE 5KG",
+        "sap_code": "G01IC01P06ETC001",
+        "sap_qty": 8.0,
+        "match_score": 1.0,
+        "conversion": "10kg \u00f7 5kg per unit = 2 PCS"
+      },
+      {
+        "status": "MISSED",
+        "llm_item": "-",
+        "llm_code": "-",
+        "llm_qty": 0,
+        "sap_item": "PILLSBURY EGG FREE TEA TIME VANILLA 5KG",
+        "sap_code": "G01IC01P06ETV001",
+        "sap_qty": 12.0,
+        "match_score": 0
+      },
+      {
+        "status": "MISSED",
+        "llm_item": "-",
+        "llm_code": "-",
+        "llm_qty": 0,
+        "sap_item": "PILLSBURY EGG FREE CHOCOLATE 5KG.",
+        "sap_code": "G01IC01P06ECH001",
+        "sap_qty": 36.0,
+        "match_score": 0
+      }
+    ]
+  },
+  {
+    "scenario_id": "S24",
+    "difficulty": "HARD",
+    "chat_name": "Snow World & TJUK ORDERING",
+    "ship_to": "SNOW WORLD ENTERTAINMENT [NERUL E]",
+    "target_count": 4,
+    "model": "claude-haiku-4-5-20251001",
+    "t2_score": 30.0,
+    "extra": 1,
+    "missed": 2,
+    "customer_messages": [
+      {
+        "text": "Hi, this is SNOW WORLD ENTERTAINMENT, PRASUK JAIN HOSPITALITY, PRASUK JAIN HOSPITALITY PRIVATE LIMITED.\n\nPillsbury brownie order 16 kg received only 1 kg.\nT55 flour not received.\nPLZ CANCEL AMUL FRESH CREAM \nADD AMUL TAZZA MILK 24PKT @\u2068Phone With Anushka\u2069 @\u2068Phone With Kumudini\u2069\n1.SPINACH CHEESE CHICKPEA TIKKI -02 PKT\n2.MINI PUNJABI SAMOSA -02 PKT\nThis material available\n@\u2068Phone With Kumudini\u2069 @\u2068Phone With Anushka\u2069\nOk plz send 02 pkt\n\nDelivery to: SNOW WORLD ENTERTAINMENT [NERUL E]"
+      },
+      {
+        "text": "Confirmed, looks good"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please correct the following:\n  - AMUL TAAZA TONED MILK 1LTR quantity should be 12 PCS, not 24\n  - AMUL-PROCESSED CHEESE BLOCK 1KG quantity should be 5 PCS, not 2\n  - Remove MINI PUNJABI SAMOSA \u2014 I didn't order that\n  - Missing item: AMUL-BUTTER IP 500GMS \u2014 need 20 PCS\n  - Missing item: AMUL-CREAM 1LTR \u2014 need 24 PCS"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please correct the following:\n  - AMUL TAAZA TONED MILK 1LTR quantity should be 12 PCS, not 24\n  - AMUL-PROCESSED CHEESE BLOCK 1KG quantity should be 5 PCS, not 2\n  - Remove MINI PUNJABI SAMOSA \u2014 I didn't order that\n  - Missing item: AMUL-BUTTER IP 500GMS \u2014 need 20 PCS\n  - Missing item: AMUL-CREAM 1LTR \u2014 need 24 PCS"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please correct the following:\n  - AMUL TAAZA TONED MILK 1LTR quantity should be 12 PCS, not 24\n  - AMUL-PROCESSED CHEESE BLOCK 1KG quantity should be 5 PCS, not 2\n  - Remove MINI PUNJABI SAMOSA \u2014 I didn't order that\n  - Missing item: AMUL-BUTTER IP 500GMS \u2014 need 20 PCS\n  - Missing item: AMUL-CREAM 1LTR \u2014 need 24 PCS"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      }
+    ],
+    "sap_expected": [],
+    "llm_output": [],
+    "details": [
+      {
+        "status": "QTY_MISMATCH",
+        "llm_item": "AMUL TAAZA TONED MILK 1LTR",
+        "llm_code": "G07IU01A02TAZ001",
+        "llm_qty": 24.0,
+        "sap_item": "AMUL TAAZA TONED MILK 1LTR",
+        "sap_code": "G07IU01A02TAZ001",
+        "sap_qty": 12.0,
+        "match_score": 1.0,
+        "conversion": "24 PKT = 24 PCS (direct count)"
+      },
+      {
+        "status": "QTY_MISMATCH",
+        "llm_item": "SPINACH CHEESE CHICKPEA TIKKI",
+        "llm_code": "UNKNOWN",
+        "llm_qty": 2.0,
+        "sap_item": "AMUL-PROCESSED CHEESE BLOCK 1KG",
+        "sap_code": "J01IP17A02CHE001",
+        "sap_qty": 5.0,
+        "match_score": 0.43333333333333335,
+        "conversion": "2 PKT = 2 PCS (not in catalogue)"
+      },
+      {
+        "status": "EXTRA",
+        "llm_item": "MINI PUNJABI SAMOSA",
+        "llm_code": "UNKNOWN",
+        "llm_qty": 2,
+        "sap_item": "-",
+        "sap_code": "-",
+        "sap_qty": 0,
+        "match_score": 0
+      },
+      {
+        "status": "MISSED",
+        "llm_item": "-",
+        "llm_code": "-",
+        "llm_qty": 0,
+        "sap_item": "AMUL-BUTTER IP 500GMS",
+        "sap_code": "J01IS06A02BUT001",
+        "sap_qty": 20.0,
+        "match_score": 0
+      },
+      {
+        "status": "MISSED",
+        "llm_item": "-",
+        "llm_code": "-",
+        "llm_qty": 0,
+        "sap_item": "AMUL-CREAM 1LTR",
+        "sap_code": "J01IC21A02CRE001",
+        "sap_qty": 24.0,
+        "match_score": 0
+      }
+    ]
+  },
+  {
+    "scenario_id": "S25",
+    "difficulty": "HARD",
+    "chat_name": "Kulturd Kombucha",
+    "ship_to": "KEPCHAKI MOMO-BANDRA.W",
+    "target_count": 3,
+    "model": "claude-haiku-4-5-20251001",
+    "t2_score": 71.43,
+    "extra": 0,
+    "missed": 0,
+    "customer_messages": [
+      {
+        "text": "Hi, this is KEPCHAKI MOMO.\n\n*Kepchaki momo order* \n*bandra outlet*\n5 boxes of peach\n3 boxes of ginger lemon grass\n4 boxes lychee lemonade\nall sku 215ml\n@\u2068Official Phone With sweta\u2069\nTOAST PASTA BAR ORDER,lower parale (FOOD BY DEVIKA) \n1 case of peach kombucha\n1 case of Elderflower and melon kombucha\nall sku 215ml\n@\u2068Official Phone With sweta\u2069 kindly make sure you punch it for the correct location.\n*MASA BAKERY ORDER* (WHISK WITH US LLP)\n48 pcs Lychee\n24 pcs Peach\nALL SKU 215ML\n@\u2068Official Phone Wit"
+      },
+      {
+        "text": "Deliver to: KEPCHAKI MOMO-BANDRA.W"
+      },
+      {
+        "text": "Deliver to: KEPCHAKI MOMO-BANDRA.W"
+      },
+      {
+        "text": "Yes, go with the closest match from your catalogue"
+      },
+      {
+        "text": "Confirmed, looks good"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please correct the following:\n  - Remove KULTUR'D KOMBUCHA PEACH 215ML(BROWN BOX) \u2014 I didn't order that\n  - Remove KULTUR'D KOMBUCHA LYCHEE LEMONADE 215ML(WHITE BOX) \u2014 I didn't order that\n  - Remove KULTUR'D KOMBUCHA LYCHEE LEMONADE 215ML(WHITE BOX) \u2014 I didn't order that\n  - Remove KULTUR'D KOMBUCHA PEACH 215ML(BROWN BOX) \u2014 I didn't order that"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please correct the following:\n  - Remove KULTUR'D KOMBUCHA PEACH 215ML(BROWN BOX) \u2014 I didn't order that\n  - Remove KULTUR'D KOMBUCHA LYCHEE LEMONADE 215ML(WHITE BOX) \u2014 I didn't order that\n  - Remove KULTUR'D KOMBUCHA LYCHEE LEMONADE 215ML(WHITE BOX) \u2014 I didn't order that\n  - Remove KULTUR'D KOMBUCHA PEACH 215ML(BROWN BOX) \u2014 I didn't order that"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please correct the following:\n  - Missing item: KULTUR'D KOMBUCHA LYCHEE LEMONADE 215ML(WHITE BOX) \u2014 need 48 PCS\n  - Missing item: KULTUR'D KOMBUCHA PEACH 215ML(WHITE BOX) \u2014 need 60 PCS"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      }
+    ],
+    "sap_expected": [],
+    "llm_output": [],
+    "details": [
+      {
+        "status": "QTY_MISMATCH",
+        "llm_item": "KULTUR'D KOMBUCHA PEACH 215ML(BROWN BOX)",
+        "llm_code": "K25IN03K38PEA002",
+        "llm_qty": 96.0,
+        "sap_item": "KULTUR'D KOMBUCHA PEACH 215ML(WHITE BOX)",
+        "sap_code": "K25IN03K38PEA002",
+        "sap_qty": 60.0,
+        "match_score": 1.0,
+        "conversion": "(5 boxes \u00d7 12) + (1 case \u00d7 12) + 24 pcs = 60 + 12 + 24 = 96 PCS"
+      },
+      {
+        "status": "MATCH",
+        "llm_item": "KULTUR'D KOMBUCHA GINGER LEMONGRASS 215ML(WHITE BO",
+        "llm_code": "K25IN03K38GIN002",
+        "llm_qty": 36.0,
+        "sap_item": "KULTUR'D KOMBUCHA GINGER LEMONGRASS 215ML(WHITE BO",
+        "sap_code": "K25IN03K38GIN002",
+        "sap_qty": 36.0,
+        "match_score": 1.0,
+        "conversion": "3 boxes \u00d7 12 pcs/box = 36 PCS"
+      },
+      {
+        "status": "QTY_MISMATCH",
+        "llm_item": "KULTUR'D KOMBUCHA LYCHEE LEMONADE 215ML(WHITE BOX)",
+        "llm_code": "K25IN03K38LYC002",
+        "llm_qty": 108.0,
+        "sap_item": "KULTUR'D KOMBUCHA LYCHEE LEMONADE 215ML(WHITE BOX)",
+        "sap_code": "K25IN03K38LYC002",
+        "sap_qty": 48.0,
+        "match_score": 1.0,
+        "conversion": "(4 boxes \u00d7 12) + (1 case \u00d7 12) + 48 pcs = 48 + 12 + 48 = 108 PCS"
+      }
+    ]
+  },
+  {
+    "scenario_id": "S01",
+    "difficulty": "EASY",
+    "chat_name": "Good Food Concept",
+    "ship_to": "GOOD FOOD CONCEPT (BOMBAY GYMKHANA)",
+    "target_count": 2,
+    "model": "gemini-2.5-flash",
+    "t2_score": 60.0,
+    "extra": 0,
+    "missed": 0,
+    "customer_messages": [
+      {
+        "text": "Hi, this is GOOD FOOD CONCEPT.\n\n5kg amul butter\n3kg amul cheese block\n2 btls sweet chilli sauce\n\nDelivery to: GOOD FOOD CONCEPT (BOMBAY GYMKHANA)"
+      },
+      {
+        "text": "Deliver to: GOOD FOOD CONCEPT (BOMBAY GYMKHANA)"
+      },
+      {
+        "text": "Confirmed, looks good"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please correct the following:\n  - TULUA KASHMIRI CHILLI WHOLE 1KG quantity should be 4 PCS, not 10\n  - TULUA PANDA CHILLI WHOLE 1 KG quantity should be 4 PCS, not 3"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please correct the following:\n  - TULUA KASHMIRI CHILLI WHOLE 1KG quantity should be 4 PCS, not 10\n  - TULUA PANDA CHILLI WHOLE 1 KG quantity should be 4 PCS, not 2\n  - Remove AMUL-PROCESSED CHEESE BLOCK 1KG \u2014 I didn't order that"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please correct the following:\n  - TULUA KASHMIRI CHILLI WHOLE 1KG quantity should be 4 PCS, not 10\n  - TULUA PANDA CHILLI WHOLE 1 KG quantity should be 4 PCS, not 2"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      }
+    ],
+    "sap_expected": [],
+    "llm_output": [],
+    "details": [
+      {
+        "status": "QTY_MISMATCH",
+        "llm_item": "AMUL-BUTTER IP 500GMS",
+        "llm_code": "J01IS06A02BUT001",
+        "llm_qty": 10.0,
+        "sap_item": "TULUA KASHMIRI CHILLI WHOLE 1KG",
+        "sap_code": "T17IS12T61KAS001",
+        "sap_qty": 4.0,
+        "match_score": 0.5,
+        "conversion": "5 kg \u00f7 0.5 kg/unit = 10 PCS"
+      },
+      {
+        "status": "QTY_MISMATCH",
+        "llm_item": "sweet chilli sauce",
+        "llm_code": "UNKNOWN",
+        "llm_qty": 2.0,
+        "sap_item": "TULUA PANDA CHILLI WHOLE 1 KG",
+        "sap_code": "T17IS12T61PAN002",
+        "sap_qty": 4.0,
+        "match_score": 0.425531914893617,
+        "conversion": "2 btls = 2 PCS"
+      }
+    ]
+  },
+  {
+    "scenario_id": "S03",
+    "difficulty": "EASY",
+    "chat_name": "Jalapeno Food Ordering",
+    "ship_to": "JALAPENO FOODS PVT LTD (PAREL EAST)",
+    "target_count": 1,
+    "model": "gemini-2.5-flash",
+    "t2_score": 0.0,
+    "extra": 0,
+    "missed": 1,
+    "customer_messages": [
+      {
+        "text": "Hi, this is JALAPENO FOODS PVT LTD.\n\nPlease please order \nBaskin robin 6box"
+      },
+      {
+        "text": "Confirmed, looks good"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please output the order as valid JSON only. No other text."
+      }
+    ],
+    "sap_expected": [],
+    "llm_output": [],
+    "details": []
+  },
+  {
+    "scenario_id": "S04",
+    "difficulty": "EASY",
+    "chat_name": "Laxmi Foods Pillsbury",
+    "ship_to": "NINETY DEGREE (RABALE)",
+    "target_count": 3,
+    "model": "gemini-2.5-flash",
+    "t2_score": 0.0,
+    "extra": 0,
+    "missed": 3,
+    "customer_messages": [
+      {
+        "text": "Hi, this is LAXMI FOODS.\n\nEggless Brownie mix-4 bag\nClassic eggs free chocolate eggless-40 kg\nNestle everyday milk whitner-12 kg"
+      },
+      {
+        "text": "Confirmed, looks good"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please output the order as valid JSON only. No other text."
+      }
+    ],
+    "sap_expected": [],
+    "llm_output": [],
+    "details": []
+  },
+  {
+    "scenario_id": "S07",
+    "difficulty": "EASY",
+    "chat_name": "DU Hospitality X TJUK",
+    "ship_to": "INNERCIRCLE HOSPITALITY LLP",
+    "target_count": 9,
+    "model": "gemini-2.5-flash",
+    "t2_score": 0.0,
+    "extra": 0,
+    "missed": 9,
+    "customer_messages": [
+      {
+        "text": "Hi, this is INNERCIRCLE HOSPITALITY LLP.\n\nSirroco Jalepeno Slice- 1Tin\nTulua Cloves-2kg\nTulua Kashmiri Chilli -2kg\nSolaz Pomaz 5L -2Tin\nTahina-1box\nReggia Spaghetti-1box\nTobasco-12btl\nMorinu Tofu -1box\nScheppes Soda-3box\nReal Cranberry -1 case\nReal Apple-1case\nInnercricle Hospitality Llp Order for tomorrow.\nGigi Asia\nSolaz Pomace 5L-2tin"
+      },
+      {
+        "text": "Confirmed, looks good"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please output the order as valid JSON only. No other text."
+      }
+    ],
+    "sap_expected": [],
+    "llm_output": [],
+    "details": []
+  },
+  {
+    "scenario_id": "S09",
+    "difficulty": "MEDIUM",
+    "chat_name": "Good Food Concept",
+    "ship_to": "GOOD FOOD CONCEPT (BOMBAY GYMKHANA)",
+    "target_count": 2,
+    "model": "gemini-2.5-flash",
+    "t2_score": 62.5,
+    "extra": 3,
+    "missed": 0,
+    "customer_messages": [
+      {
+        "text": "Hi, this is GOOD FOOD CONCEPT.\n\nGowardhan prrosed block cheese hard 1 box.\nKinley soda 3 box.\nSprite 2.5 liter ka 2 box.\nDiet coke 3 box.\nTonik water 2 box.\nCoke 2.5 liter ka 1 box.\nDelecta cream cheese 1 box.\nButter 1 box.\nAdd samosa patti 1 box.\n\nDelivery to: GOOD FOOD CONCEPT (BOMBAY GYMKHANA)"
+      },
+      {
+        "text": "Confirmed, looks good"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please output the order as valid JSON only. No other text."
+      },
+      {
+        "text": "Please correct the following:\n  - GO SLICES CHEESE 750GMS quantity should be 6 PCS, not 12\n  - AMUL-PROCESSED CHEESE BLOCK 1KG quantity should be 12 PCS, not 40\n  - Remove KINLEY CLUB SODA 750ML \u2014 I didn't order that\n  - Remove COKE DIET CAN 300ML(DKO) \u2014 I didn't order that\n  - Remove DLECTA-CREAM CHEESE 1KG \u2014 I didn't order that\n  - Remove SWITZ SAMOSA PATTI 3/10 500GMS(REGULAR) \u2014 I didn't order that"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please output the corrected order as valid JSON only."
+      },
+      {
+        "text": "Please correct the following:\n  - GO SLICES CHEESE 750GMS quantity should be 6 PCS, not 12\n  - AMUL-PROCESSED CHEESE BLOCK 1KG quantity should be 12 PCS, not 40\n  - Remove KINLEY CLUB SODA 750ML \u2014 I didn't order that\n  - Remove COKE DIET CAN 300ML(DKO) \u2014 I didn't order that\n  - Remove DLECTA-CREAM CHEESE 1KG \u2014 I didn't order that\n  - Remove SWITZ SAMOSA PATTI 3/10 500GMS(REGULAR) \u2014 I didn't order that"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please output the corrected order as valid JSON only."
+      },
+      {
+        "text": "Please correct the following:\n  - GO SLICES CHEESE 750GMS quantity should be 6 PCS, not 12\n  - AMUL-PROCESSED CHEESE BLOCK 1KG quantity should be 12 PCS, not 40\n  - Remove KINLEY CLUB SODA 750ML \u2014 I didn't order that\n  - Remove COKE DIET CAN 300ML(DKO) \u2014 I didn't order that\n  - Remove DLECTA-CREAM CHEESE 1KG \u2014 I didn't order that\n  - Remove SWITZ SAMOSA PATTI 3/10 500GMS(REGULAR) \u2014 I didn't order that"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      }
+    ],
+    "sap_expected": [],
+    "llm_output": [],
+    "details": [
+      {
+        "status": "MATCH",
+        "llm_item": "GO SLICES CHEESE 750GMS",
+        "llm_code": "P04IP17G08SLI001",
+        "llm_qty": 6.0,
+        "sap_item": "GO SLICES CHEESE 750GMS",
+        "sap_code": "P04IP17G08SLI001",
+        "sap_qty": 6.0,
+        "match_score": 1.0,
+        "conversion": "Customer corrected product from 'GOWARDHAN PROCESSED CHEESE 1KG(HARD)' to 'GO SLICES CHEESE 750GMS' and quantity to 6 PCS."
+      },
+      {
+        "status": "MATCH",
+        "llm_item": "AMUL-PROCESSED CHEESE BLOCK 1KG",
+        "llm_code": "J01IP17A02CHE001",
+        "llm_qty": 12.0,
+        "sap_item": "AMUL-PROCESSED CHEESE BLOCK 1KG",
+        "sap_code": "J01IP17A02CHE001",
+        "sap_qty": 12.0,
+        "match_score": 1.0,
+        "conversion": "Customer corrected product from 'AMUL-BUTTER IP 500GMS' to 'AMUL-PROCESSED CHEESE BLOCK 1KG' and quantity to 12 PCS."
+      },
+      {
+        "status": "EXTRA",
+        "llm_item": "SPRITE 2.25 LTR",
+        "llm_code": "T28IC03S09SPR005",
+        "llm_qty": 18,
+        "sap_item": "-",
+        "sap_code": "-",
+        "sap_qty": 0,
+        "match_score": 0
+      },
+      {
+        "status": "EXTRA",
+        "llm_item": "UNKNOWN: Tonik water",
+        "llm_code": "UNKNOWN",
+        "llm_qty": 2,
+        "sap_item": "-",
+        "sap_code": "-",
+        "sap_qty": 0,
+        "match_score": 0
+      },
+      {
+        "status": "EXTRA",
+        "llm_item": "COKE 2.25 LTR",
+        "llm_code": "T28IC03C42COK008",
+        "llm_qty": 9,
+        "sap_item": "-",
+        "sap_code": "-",
+        "sap_qty": 0,
+        "match_score": 0
+      }
+    ]
+  },
+  {
+    "scenario_id": "S09",
+    "difficulty": "MEDIUM",
+    "chat_name": "Good Food Concept",
+    "ship_to": "GOOD FOOD CONCEPT-MAHIM.W",
+    "target_count": 4,
+    "model": "gemini-2.5-flash",
+    "t2_score": 66.67,
+    "extra": 0,
+    "missed": 0,
+    "customer_messages": [
+      {
+        "text": "Hi, this is GOOD FOOD CONCEPT.\n\nGowardhan prrosed block cheese hard 1 box.\nKinley soda 3 box.\nSprite 2.5 liter ka 2 box.\nDiet coke 3 box.\nTonik water 2 box.\nCoke 2.5 liter ka 1 box.\nDelecta cream cheese 1 box.\nButter 1 box.\nAdd samosa patti 1 box.\n\nDelivery to: GOOD FOOD CONCEPT-MAHIM.W"
+      },
+      {
+        "text": "Deliver to: GOOD FOOD CONCEPT-MAHIM.W"
+      },
+      {
+        "text": "Deliver to: GOOD FOOD CONCEPT-MAHIM.W"
+      },
+      {
+        "text": "Deliver to: GOOD FOOD CONCEPT-MAHIM.W"
+      },
+      {
+        "text": "Deliver to: GOOD FOOD CONCEPT-MAHIM.W"
+      },
+      {
+        "text": "Deliver to: GOOD FOOD CONCEPT-MAHIM.W"
+      },
+      {
+        "text": "Confirmed, looks good"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please correct the following:\n  - AMUL-BUTTER IP 500GMS quantity should be 15 PCS, not 40\n  - GO MOZZARELLA CHEESE DICE 2KG(IQF) quantity should be 2 PCS, not 12\n  - GO SLICES CHEESE 750GMS quantity should be 3 PCS, not 30\n  - INDIBITES-MINI PUNJABI SAMOSA 1KG quantity should be 2 PCS, not 8\n  - Remove KINLEY CLUB SODA 750ML \u2014 I didn't order that\n  - Remove COKE DIET CAN 300ML(DKO) \u2014 I didn't order that"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please output the corrected order as valid JSON only."
+      },
+      {
+        "text": "Please correct the following:\n  - GO MOZZARELLA CHEESE DICE 2KG(IQF) quantity should be 2 PCS, not 12\n  - GO SLICES CHEESE 750GMS quantity should be 3 PCS, not 30\n  - INDIBITES-MINI PUNJABI SAMOSA 1KG quantity should be 2 PCS, not 8"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please correct the following:\n  - GO MOZZARELLA CHEESE DICE 2KG(IQF) quantity should be 2 PCS, not 12\n  - GO SLICES CHEESE 750GMS quantity should be 3 PCS, not 30\n  - INDIBITES-MINI PUNJABI SAMOSA 1KG quantity should be 2 PCS, not 8"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      }
+    ],
+    "sap_expected": [],
+    "llm_output": [],
+    "details": [
+      {
+        "status": "MATCH",
+        "llm_item": "AMUL-BUTTER IP 500GMS",
+        "llm_code": "J01IS06A02BUT001",
+        "llm_qty": 15.0,
+        "sap_item": "AMUL-BUTTER IP 500GMS",
+        "sap_code": "J01IS06A02BUT001",
+        "sap_qty": 15.0,
+        "match_score": 1.0,
+        "conversion": "Customer corrected quantity from 40 PCS to 15 PCS."
+      },
+      {
+        "status": "QTY_MISMATCH",
+        "llm_item": "GOWARDHAN PROCESSED CHEESE 1KG(HARD)",
+        "llm_code": "P04IP17G07PRO002",
+        "llm_qty": 12.0,
+        "sap_item": "GO MOZZARELLA CHEESE DICE 2KG(IQF)",
+        "sap_code": "P04IP17G08MOZ005",
+        "sap_qty": 2.0,
+        "match_score": 0.75,
+        "conversion": "1 box \u00d7 12 pcs/box = 12 PCS"
+      },
+      {
+        "status": "QTY_MISMATCH",
+        "llm_item": "SWITZ SAMOSA PATTI 3/10 500GMS(REGULAR)",
+        "llm_code": "S07IP11S17SAM001",
+        "llm_qty": 30.0,
+        "sap_item": "GO SLICES CHEESE 750GMS",
+        "sap_code": "P04IP17G08SLI001",
+        "sap_qty": 3.0,
+        "match_score": 0.5,
+        "conversion": "1 box \u00d7 30 pcs/box = 30 PCS"
+      },
+      {
+        "status": "QTY_MISMATCH",
+        "llm_item": "DLECTA-CREAM CHEESE 1KG",
+        "llm_code": "D13IP17D31CRE003",
+        "llm_qty": 8.0,
+        "sap_item": "INDIBITES-MINI PUNJABI SAMOSA 1KG",
+        "sap_code": "H13IA01I15MIN001",
+        "sap_qty": 2.0,
+        "match_score": 0.4375,
+        "conversion": "1 box \u00d7 8 pcs/box = 8 PCS"
+      }
+    ]
+  },
+  {
+    "scenario_id": "S11",
+    "difficulty": "MEDIUM",
+    "chat_name": "Jalapeno Food Ordering",
+    "ship_to": "JALAPENO FOODS PVT LTD (PAREL EAST)",
+    "target_count": 6,
+    "model": "gemini-2.5-flash",
+    "t2_score": 0.0,
+    "extra": 0,
+    "missed": 6,
+    "customer_messages": [
+      {
+        "text": "Hi, this is JALAPENO FOODS PVT LTD.\n\nPlease please order \nPotato wedges -1box\nRosti round -1box\nTortilla 10no-2box\nTonic water schweppes -3box\nPls add order \n9mm fres fries sure scrip -3box\nBaskin robin -4box"
+      },
+      {
+        "text": "Confirmed, looks good"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please output the order as valid JSON only. No other text."
+      }
+    ],
+    "sap_expected": [],
+    "llm_output": [],
+    "details": []
+  },
+  {
+    "scenario_id": "S15",
+    "difficulty": "MEDIUM",
+    "chat_name": "BAWA GROUP ORDERING",
+    "ship_to": "HOTEL BAWA REGENCY",
+    "target_count": 2,
+    "model": "gemini-2.5-flash",
+    "t2_score": 71.43,
+    "extra": 2,
+    "missed": 0,
+    "customer_messages": [
+      {
+        "text": "Hi, this is KIRAN BAWA HOTELS PVT LTD..\n\nAmul Prossd Cheese Block - 06 kg\nAmul Butter IP - 01Box\nEpigamia Almond Milk 1ltr - 12 pkt\nKnorr Chicken Broth Powder 500 grm - 02 pkt\n*Vijaydeep Hotel Pvt Ltd*\n*Vile Parle East*\nPlss coke 750 ml 1 case\nVijaydeep Hotel Pvt Ltd \nHotel Bawa Continatal\nJuhu Tara Road\nVanilla ice cream 2 bulk\nAmul cheese 1 kg\nCooking rich Cream 4 pkt\nSprite can 1 box\nKinly soda 1 box"
+      },
+      {
+        "text": "Deliver to: HOTEL BAWA REGENCY"
+      },
+      {
+        "text": "Confirmed, looks good"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please output the order as valid JSON only. No other text."
+      },
+      {
+        "text": "Please correct the following:\n  - AMUL-CREAM 1LTR quantity should be 12 PCS, not 6\n  - GO SLICES CHEESE 750GMS quantity should be 10 PCS, not 40"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please correct the following:\n  - AMUL-CREAM 1LTR quantity should be 12 PCS, not 6\n  - GO SLICES CHEESE 750GMS quantity should be 10 PCS, not 40"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please correct the following:\n  - AMUL-CREAM 1LTR quantity should be 12 PCS, not 6\n  - GO SLICES CHEESE 750GMS quantity should be 10 PCS, not 40"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please output the corrected order as valid JSON only."
+      }
+    ],
+    "sap_expected": [],
+    "llm_output": [],
+    "details": [
+      {
+        "status": "MATCH",
+        "llm_item": "AMUL-CREAM 1LTR",
+        "llm_code": "J01IC21A02CRE001",
+        "llm_qty": 12.0,
+        "sap_item": "AMUL-CREAM 1LTR",
+        "sap_code": "J01IC21A02CRE001",
+        "sap_qty": 12.0,
+        "match_score": 1.0,
+        "conversion": "Directly specified as 12 PCS"
+      },
+      {
+        "status": "MATCH",
+        "llm_item": "GO SLICES CHEESE 750GMS",
+        "llm_code": "P04IP17G08SLI001",
+        "llm_qty": 10.0,
+        "sap_item": "GO SLICES CHEESE 750GMS",
+        "sap_code": "P04IP17G08SLI001",
+        "sap_qty": 10.0,
+        "match_score": 1.0,
+        "conversion": "Directly specified as 10 PCS"
+      },
+      {
+        "status": "EXTRA",
+        "llm_item": "AMUL-PROCESSED CHEESE BLOCK 1KG",
+        "llm_code": "J01IP17A02CHE001",
+        "llm_qty": 6,
+        "sap_item": "-",
+        "sap_code": "-",
+        "sap_qty": 0,
+        "match_score": 0
+      },
+      {
+        "status": "EXTRA",
+        "llm_item": "AMUL-BUTTER IP 500GMS",
+        "llm_code": "J01IS06A02BUT001",
+        "llm_qty": 40,
+        "sap_item": "-",
+        "sap_code": "-",
+        "sap_qty": 0,
+        "match_score": 0
+      }
+    ]
+  },
+  {
+    "scenario_id": "S18",
+    "difficulty": "HARD",
+    "chat_name": "Snow World & TJUK ORDERING",
+    "ship_to": "POKKIDO JUNIOR",
+    "target_count": 7,
+    "model": "gemini-2.5-flash",
+    "t2_score": 0.0,
+    "extra": 0,
+    "missed": 7,
+    "customer_messages": [
+      {
+        "text": "Hi, this is SNOW WORLD ENTERTAINMENT, PRASUK JAIN HOSPITALITY, PRASUK JAIN HOSPITALITY PRIVATE LIMITED.\n\nOrder for 07/2/2026.\nFrench fries 15 pkt\nButter 3 kg\n*PRASUK JAIN HOSPITALITY PRIVATE LIMITED*\n*POKIDDO JUNIOR*\n11/12, Raghuvanshi Mill, Senapati Bapat Marg, Gandhi Nagar, Lower Parel West, Worli, Mumbai, Maharashtra 400013\nMob-9773723728.\n1. DAVINCI MOJITO MINT SYRUP - 4 BTL\n2. DAVINCI WATERMELON SYRUP - 3 BTL\n3. WHITE PEPPER POWDER - 2 PKT\n4. KASHMIRI CHILLI WHOLE - 5 PKT\n5. BLACK PEPPER WH"
+      },
+      {
+        "text": "Confirmed, looks good"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please output the order as valid JSON only. No other text."
+      }
+    ],
+    "sap_expected": [],
+    "llm_output": [],
+    "details": []
+  },
+  {
+    "scenario_id": "S18",
+    "difficulty": "HARD",
+    "chat_name": "Snow World & TJUK ORDERING",
+    "ship_to": "PRASUK JAIN HOSPITALITY- KURLA (W)",
+    "target_count": 3,
+    "model": "gemini-2.5-flash",
+    "t2_score": 33.33,
+    "extra": 2,
+    "missed": 1,
+    "customer_messages": [
+      {
+        "text": "Hi, this is SNOW WORLD ENTERTAINMENT, PRASUK JAIN HOSPITALITY, PRASUK JAIN HOSPITALITY PRIVATE LIMITED.\n\nPlz send tomorrow \nEggless buffermix 4kg\nPls add..\nRed chilli powder 1 kg\nTurmeric powder 1 kg\nCumin seeds 1 kg\nMustard seeds 1 kg.\nPlease add\n1. Crush strawberry 1 ltr- 1 btl\n2. Ice Cream vanilla 4 ltr (mother dairy) - 2 black\nPls add..\nBaskin Robbins mississippi mud ice cream 100 ml (12 pcs)...2 box.\nBaskin Robbins cotton candy 100 ml (12 pcs)..2 box.\nVanila icecream mother dairy 4 ltr...4 "
+      },
+      {
+        "text": "Deliver to: PRASUK JAIN HOSPITALITY- KURLA (W)"
+      },
+      {
+        "text": "Confirmed, looks good"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please output the order as valid JSON only. No other text."
+      },
+      {
+        "text": "Please correct the following:\n  - TULUA KASHMIRI CHILLI WHOLE 1KG quantity should be 2 PCS, not 1\n  - MANAMA STRAWBERRY CRUSH 1LTR quantity should be 1 PCS, not 4\n  - Remove TULUA RED CHILLI POWDER HOT 1KG \u2014 I didn't order that\n  - Remove TULUA TURMERIC POWDER 1KG \u2014 I didn't order that\n  - Missing item: MOTHER DAIRY VANILLA PK(LOW FAT)4000ML \u2014 need 2 PCS"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please output the corrected order as valid JSON only."
+      },
+      {
+        "text": "Please correct the following:\n  - TULUA KASHMIRI CHILLI WHOLE 1KG quantity should be 2 PCS, not 1\n  - MANAMA STRAWBERRY CRUSH 1LTR quantity should be 1 PCS, not 4\n  - Remove TULUA RED CHILLI POWDER HOT 1KG \u2014 I didn't order that\n  - Remove TULUA TURMERIC POWDER 1KG \u2014 I didn't order that\n  - Missing item: MOTHER DAIRY VANILLA PK(LOW FAT)4000ML \u2014 need 2 PCS"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please output the corrected order as valid JSON only."
+      },
+      {
+        "text": "Please correct the following:\n  - TULUA KASHMIRI CHILLI WHOLE 1KG quantity should be 2 PCS, not 1\n  - MANAMA STRAWBERRY CRUSH 1LTR quantity should be 1 PCS, not 4\n  - Remove TULUA RED CHILLI POWDER HOT 1KG \u2014 I didn't order that\n  - Remove TULUA TURMERIC POWDER 1KG \u2014 I didn't order that\n  - Missing item: MOTHER DAIRY VANILLA PK(LOW FAT)4000ML \u2014 need 2 PCS"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please output the corrected order as valid JSON only."
+      }
+    ],
+    "sap_expected": [],
+    "llm_output": [],
+    "details": [
+      {
+        "status": "QTY_MISMATCH",
+        "llm_item": "TULUA CUMIN WHOLE 1KG",
+        "llm_code": "T17IS12T61CUM001",
+        "llm_qty": 1.0,
+        "sap_item": "TULUA KASHMIRI CHILLI WHOLE 1KG",
+        "sap_code": "T17IS12T61KAS001",
+        "sap_qty": 2.0,
+        "match_score": 0.8125,
+        "conversion": "1 kg \u00f7 1.0 kg/unit = 1 PCS"
+      },
+      {
+        "status": "QTY_MISMATCH",
+        "llm_item": "PILLSBURY EGGLESS BROWNIE MIX 1KG",
+        "llm_code": "G01IC01P06EBR001",
+        "llm_qty": 4.0,
+        "sap_item": "MANAMA STRAWBERRY CRUSH 1LTR",
+        "sap_code": "M20IC26M49STR001",
+        "sap_qty": 1.0,
+        "match_score": 0.5,
+        "conversion": "4 kg \u00f7 1.0 kg/unit = 4 PCS"
+      },
+      {
+        "status": "EXTRA",
+        "llm_item": "TULUA RED CHILLI POWDER HOT 1KG",
+        "llm_code": "T17IS11T61RED001",
+        "llm_qty": 1,
+        "sap_item": "-",
+        "sap_code": "-",
+        "sap_qty": 0,
+        "match_score": 0
+      },
+      {
+        "status": "EXTRA",
+        "llm_item": "TULUA TURMERIC POWDER 1KG",
+        "llm_code": "T17IS11T61TUR001",
+        "llm_qty": 1,
+        "sap_item": "-",
+        "sap_code": "-",
+        "sap_qty": 0,
+        "match_score": 0
+      },
+      {
+        "status": "MISSED",
+        "llm_item": "-",
+        "llm_code": "-",
+        "llm_qty": 0,
+        "sap_item": "MOTHER DAIRY VANILLA PK(LOW FAT)4000ML",
+        "sap_code": "M05II01M11VAN002",
+        "sap_qty": 2.0,
+        "match_score": 0
+      }
+    ]
+  },
+  {
+    "scenario_id": "S20",
+    "difficulty": "HARD",
+    "chat_name": "Good Food Concept",
+    "ship_to": "GOOD FOOD CONCEPT (BOMBAY GYMKHANA)",
+    "target_count": 4,
+    "model": "gemini-2.5-flash",
+    "t2_score": 0.0,
+    "extra": 0,
+    "missed": 4,
+    "customer_messages": [
+      {
+        "text": "Hi, this is GOOD FOOD CONCEPT.\n\n6kg amul butter salted\n3kg amul cheese block\n2kg pizza cheese diced\n1 box amul fresh cream\ndadar parsee gymkhana outlet\n\nDelivery to: GOOD FOOD CONCEPT (BOMBAY GYMKHANA)"
+      },
+      {
+        "text": "Confirmed, looks good"
+      },
+      {
+        "text": "Now please output the FINAL complete order as structured JSON.\nInclude ALL items from the entire conversation (including additions, minus cancellations).\n\nCRITICAL: ONLY include items the customer EXPLICITLY ordered. Do NOT add any items\nthat were not mentioned by the customer. Count the items in your output \u2014 they must\nmatch the number of distinct products the customer asked for. If you have MORE items\nthan the customer mentioned, you are hallucinating \u2014 remove the extras.\n\nOutput ONLY this JSO"
+      },
+      {
+        "text": "Please output the order as valid JSON only. No other text."
+      }
+    ],
+    "sap_expected": [],
+    "llm_output": [],
+    "details": []
+  }
+]

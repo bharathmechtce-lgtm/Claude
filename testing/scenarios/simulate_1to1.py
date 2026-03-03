@@ -59,7 +59,28 @@ def _load_dotenv(path):
 _load_dotenv(os.path.join(PROJECT_ROOT, ".env"))
 
 ANTHROPIC_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
-DEFAULT_MODEL = "claude-sonnet-4-5-20250929"
+GEMINI_KEY = os.environ.get("GEMINI_API_KEY", "")
+
+# Model registry with costs
+MODEL_REGISTRY = {
+    "claude-haiku-4-5-20251001": {
+        "provider": "anthropic", "input_cost": 1.0, "output_cost": 5.0,
+        "label": "Haiku 4.5",
+    },
+    "claude-sonnet-4-5-20250929": {
+        "provider": "anthropic", "input_cost": 3.0, "output_cost": 15.0,
+        "label": "Sonnet 4.5",
+    },
+    "gemini-2.5-flash": {
+        "provider": "google", "input_cost": 0.30, "output_cost": 2.50,
+        "label": "Gemini 2.5 Flash",
+    },
+}
+DEFAULT_MODEL = "claude-haiku-4-5-20251001"
+
+# Logs directory
+LOGS_DIR = os.path.join(os.path.dirname(SCRIPT_DIR), "results", "sim_logs")
+os.makedirs(LOGS_DIR, exist_ok=True)
 
 # ============================================================
 # COLORS (ANSI)
@@ -127,17 +148,16 @@ def build_system_prompt(scenario):
 
 
 # ============================================================
-# LLM CALLER
+# LLM CALLERS
 # ============================================================
-def call_llm(messages, system_prompt, model=DEFAULT_MODEL):
-    """Call Claude API with conversation history. Returns (response_text, tokens_in, tokens_out)."""
+def _call_anthropic(messages, system_prompt, model):
+    """Call Anthropic Claude API. Returns (text, tokens_in, tokens_out)."""
     payload = {
         "model": model,
         "max_tokens": 4096,
         "system": system_prompt,
         "messages": messages,
     }
-
     try:
         resp = requests.post(
             "https://api.anthropic.com/v1/messages",
@@ -153,18 +173,50 @@ def call_llm(messages, system_prompt, model=DEFAULT_MODEL):
         if resp.status_code != 200:
             err = data.get("error", {}).get("message", str(data))
             return f"[API ERROR: {err}]", 0, 0
-
         text = ""
         for block in data.get("content", []):
             if block.get("type") == "text":
                 text += block["text"]
-
-        in_tok = data["usage"]["input_tokens"]
-        out_tok = data["usage"]["output_tokens"]
-        return text, in_tok, out_tok
-
+        return text, data["usage"]["input_tokens"], data["usage"]["output_tokens"]
     except Exception as e:
         return f"[EXCEPTION: {str(e)[:200]}]", 0, 0
+
+
+def _call_google(messages, system_prompt, model):
+    """Call Google Gemini API. Returns (text, tokens_in, tokens_out)."""
+    # Convert Anthropic message format to Gemini format
+    contents = []
+    for m in messages:
+        role = "user" if m["role"] == "user" else "model"
+        contents.append({"role": role, "parts": [{"text": m["content"]}]})
+    try:
+        resp = requests.post(
+            f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={GEMINI_KEY}",
+            headers={"Content-Type": "application/json"},
+            json={
+                "system_instruction": {"parts": [{"text": system_prompt}]},
+                "contents": contents,
+                "generationConfig": {"maxOutputTokens": 4096},
+            },
+            timeout=120,
+        )
+        data = resp.json()
+        if resp.status_code != 200:
+            err = data.get("error", {}).get("message", str(data))
+            return f"[API ERROR: {err}]", 0, 0
+        text = data["candidates"][0]["content"]["parts"][0]["text"]
+        usage = data.get("usageMetadata", {})
+        return text, usage.get("promptTokenCount", 0), usage.get("candidatesTokenCount", 0)
+    except Exception as e:
+        return f"[EXCEPTION: {str(e)[:200]}]", 0, 0
+
+
+def call_llm(messages, system_prompt, model=DEFAULT_MODEL):
+    """Dispatch to the right API based on model registry."""
+    provider = MODEL_REGISTRY.get(model, {}).get("provider", "anthropic")
+    if provider == "google":
+        return _call_google(messages, system_prompt, model)
+    return _call_anthropic(messages, system_prompt, model)
 
 
 def print_comparison(result):
@@ -369,12 +421,47 @@ def show_scenario_detail(scenario):
               f"{text_preview}{C_DIM}{type_tag}{C_RESET}")
 
 
+def select_model():
+    """Interactive model selection. Returns model ID."""
+    subheader("Step 3: Select Model")
+    models = list(MODEL_REGISTRY.items())
+    for i, (model_id, info) in enumerate(models, 1):
+        provider_tag = "Anthropic" if info["provider"] == "anthropic" else "Google"
+        cost_info = f"${info['input_cost']:.2f}/${info['output_cost']:.2f} per MTok"
+        print(f"  {C_BOLD}[{i}]{C_RESET} {info['label']:<20} {C_DIM}({provider_tag} — {cost_info}){C_RESET}")
+
+    choice = prompt_input("\n  Pick model", "1")
+    try:
+        idx = int(choice) - 1
+        if 0 <= idx < len(models):
+            selected = models[idx][0]
+            print(f"  {C_GREEN}Selected: {MODEL_REGISTRY[selected]['label']} ({selected}){C_RESET}")
+            return selected
+    except ValueError:
+        pass
+    print(f"  {C_DIM}Defaulting to {MODEL_REGISTRY[DEFAULT_MODEL]['label']}{C_RESET}")
+    return DEFAULT_MODEL
+
+
 def run_simulation(scenario):
     """Run the interactive simulation for a scenario."""
     s = scenario
 
-    # Step 3: Batch window
-    subheader("Step 3: Configure Batch Window")
+    # Step 3: Model selection
+    model_id = select_model()
+    model_label = MODEL_REGISTRY.get(model_id, {}).get("label", model_id)
+
+    # Validate API key
+    provider = MODEL_REGISTRY.get(model_id, {}).get("provider", "anthropic")
+    if provider == "anthropic" and not ANTHROPIC_KEY:
+        print(f"\n{C_RED}  ANTHROPIC_API_KEY not set!{C_RESET}")
+        return
+    if provider == "google" and not GEMINI_KEY:
+        print(f"\n{C_RED}  GEMINI_API_KEY not set!{C_RESET}")
+        return
+
+    # Step 4: Batch window
+    subheader("Step 4: Configure Batch Window")
     print(f"\n  The batch window is how long the bot waits for silence before processing.")
     print(f"  If you send messages faster than this → they get batched together.")
     print(f"  If the gap exceeds this → bot processes the batch and responds.\n")
@@ -404,6 +491,7 @@ def run_simulation(scenario):
         return
 
     header("Simulation Start")
+    print(f"  Model:  {C_BOLD}{model_label}{C_RESET} ({model_id})")
     print(f"  Batch window: {C_BOLD}{batch_window}s{C_RESET}")
     print(f"  Customer messages to send: {C_BOLD}{len(customer_messages)}{C_RESET}")
     print(f"  SAP truth items: {C_BOLD}{s['sap_truth_count']}{C_RESET}")
@@ -463,7 +551,7 @@ def run_simulation(scenario):
             })
 
             response, in_tok, out_tok = call_llm(
-                conversation_history, system_prompt
+                conversation_history, system_prompt, model_id
             )
             total_in_tokens += in_tok
             total_out_tokens += out_tok
@@ -473,7 +561,7 @@ def run_simulation(scenario):
                 "content": response,
             })
 
-            print(f"\n  {C_BLUE}{C_BOLD}BOT:{C_RESET}")
+            print(f"\n  {C_BLUE}{C_BOLD}BOT ({model_label}):{C_RESET}")
             for line in response.split("\n"):
                 print(f"  {C_BLUE}{line}{C_RESET}")
             print(f"  {C_DIM}[{in_tok} in / {out_tok} out tokens]{C_RESET}")
@@ -526,7 +614,7 @@ def run_simulation(scenario):
     })
 
     extraction_response, in_tok, out_tok = call_llm(
-        conversation_history, system_prompt
+        conversation_history, system_prompt, model_id
     )
     total_in_tokens += in_tok
     total_out_tokens += out_tok
@@ -560,50 +648,65 @@ def run_simulation(scenario):
 
     # Cost summary
     subheader("Token Usage")
-    cost = (total_in_tokens / 1_000_000) * 3.0 + (total_out_tokens / 1_000_000) * 15.0
+    reg = MODEL_REGISTRY.get(model_id, {"input_cost": 1.0, "output_cost": 5.0})
+    cost = (total_in_tokens / 1_000_000) * reg["input_cost"] + (total_out_tokens / 1_000_000) * reg["output_cost"]
+    print(f"  Model:  {model_label} ({model_id})")
     print(f"  Input:  {total_in_tokens:,} tokens")
     print(f"  Output: {total_out_tokens:,} tokens")
     print(f"  Batches processed: {batch_num}")
     print(f"  Est. cost: ${cost:.4f}")
 
-    # Save results
+    # Save results to sim_logs with model name
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    model_short = model_label.replace(" ", "_").replace(".", "")
     results_path = os.path.join(
-        SCRIPT_DIR,
-        f"sim_result_S{s['scenario_id']:02d}_{datetime.now().strftime('%H%M%S')}.json"
+        LOGS_DIR,
+        f"sim_S{s['scenario_id']:02d}_{model_short}_{timestamp}.json"
     )
+    save_data = {
+        "scenario_id": s["scenario_id"],
+        "chat_name": s["chat_name"],
+        "date": s["date"],
+        "difficulty": s["difficulty"],
+        "model_id": model_id,
+        "model_label": model_label,
+        "batch_window": batch_window,
+        "batches": batch_num,
+        "total_in_tokens": total_in_tokens,
+        "total_out_tokens": total_out_tokens,
+        "cost": cost,
+        "conversation_history": conversation_history,
+        "llm_extracted_json": llm_json,
+        "comparison": {k: v for k, v in result.items() if k != "details"},
+        "comparison_details": result["details"],
+    }
     with open(results_path, "w") as f:
-        json.dump({
-            "scenario_id": s["scenario_id"],
-            "chat_name": s["chat_name"],
-            "date": s["date"],
-            "difficulty": s["difficulty"],
-            "batch_window": batch_window,
-            "batches": batch_num,
-            "total_in_tokens": total_in_tokens,
-            "total_out_tokens": total_out_tokens,
-            "cost": cost,
-            "conversation_history": conversation_history,
-            "llm_extracted_json": llm_json,
-            "comparison": {k: v for k, v in result.items() if k != "details"},
-            "comparison_details": result["details"],
-        }, f, indent=2, default=str)
-    print(f"\n  {C_DIM}Results saved to: {results_path}{C_RESET}")
+        json.dump(save_data, f, indent=2, default=str)
+    print(f"\n  {C_GREEN}Results saved to: {results_path}{C_RESET}")
 
 
 # ============================================================
 # ENTRY POINT
 # ============================================================
 def main():
-    global ANTHROPIC_KEY
+    global ANTHROPIC_KEY, GEMINI_KEY
 
-    # Check API key
-    if not ANTHROPIC_KEY:
-        print(f"\n{C_YELLOW}  ANTHROPIC_API_KEY not set in environment.{C_RESET}")
-        key = prompt_input("  Enter your Anthropic API key").strip()
-        if not key:
-            print(f"{C_RED}  No API key provided. Exiting.{C_RESET}")
+    # Check API keys
+    if not ANTHROPIC_KEY and not GEMINI_KEY:
+        print(f"\n{C_YELLOW}  No API keys found. Set ANTHROPIC_API_KEY and/or GEMINI_API_KEY.{C_RESET}")
+        key = prompt_input("  Enter Anthropic API key (or press Enter to skip)").strip()
+        if key:
+            ANTHROPIC_KEY = key
+        gkey = prompt_input("  Enter Gemini API key (or press Enter to skip)").strip()
+        if gkey:
+            GEMINI_KEY = gkey
+        if not ANTHROPIC_KEY and not GEMINI_KEY:
+            print(f"{C_RED}  No API keys provided. Exiting.{C_RESET}")
             return
-        ANTHROPIC_KEY = key
+
+    print(f"\n  {C_DIM}API keys: Anthropic={'SET' if ANTHROPIC_KEY else 'NOT SET'}, "
+          f"Gemini={'SET' if GEMINI_KEY else 'NOT SET'}{C_RESET}")
+    print(f"  {C_DIM}Logs saved to: {LOGS_DIR}{C_RESET}")
 
     scenarios = load_scenarios()
 
