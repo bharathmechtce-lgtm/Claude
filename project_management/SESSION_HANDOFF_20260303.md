@@ -296,14 +296,32 @@ WHATSAPP_APP_SECRET=<key>
 
 ## 10. HOW TO RUN THINGS
 
-### Interactive Simulator (single scenario)
+### Manual Testing Tool (YOU chat as the customer)
 ```bash
-cd /home/user/Claude
+python testing/scenarios/manual_test.py
+```
+- Pick model (Haiku or Gemini)
+- Loads all 16 failed scenarios with full context
+- Shows original customer messages + SAP expected items
+- Press Enter to auto-send next customer message, or type your own
+- `/done` to extract order and score, `/skip` to skip, `/quit` to exit
+- All conversations logged to `testing/results/manual_test_logs/`
+
+### Failure Reference Excel
+```bash
+python testing/scenarios/build_failure_excel.py
+```
+Generates `testing/results/failed_scenarios_*.xlsx` with:
+- Summary sheet (16 failures, scores, root cause patterns)
+- 16 detail sheets (one per failure: messages, SAP truth, previous LLM results)
+
+### Auto Simulator (bot auto-responds, single scenario)
+```bash
 python testing/scenarios/simulate_1to1.py
 # Prompts: difficulty → scenario → model → batch window → run
 ```
 
-### Full Haiku Test (all 25 scenarios)
+### Full Haiku Test (all 25 scenarios, automated)
 ```bash
 python testing/scenarios/run_all_haiku.py
 ```
