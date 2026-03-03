@@ -151,9 +151,12 @@ PRODUCT MATCHING RULES:
 - Do NOT invent item codes
 - If match confidence is low, ASK for clarification
 - If you cannot find a match, say so
-- GENERIC TERMS: When a customer uses a generic term like "bottle", "water", "soda", "juice" etc.
-  WITHOUT specifying a brand, search ALL matching products in the catalogue — do NOT default to
-  one specific brand. Instead, ask which product they want by listing available options.
+- GENERIC TERMS: When a customer uses a generic term WITHOUT specifying a brand, do NOT
+  default to one specific brand. Instead, ask which product they want by listing the
+  matching options from the catalogue. Use context to narrow down sensibly:
+  - "water bottle" / "pani" → list water/sparkling water brands (NOT sauce bottles)
+  - "soda" → list soda brands only
+  - "bottle" alone → use surrounding context to decide category. If ambiguous, ask.
 
 PRODUCT CATALOGUE (items this customer typically orders):
 """
