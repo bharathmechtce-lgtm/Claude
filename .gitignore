@@ -18,11 +18,7 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Data exchange (user uploads - keep folder but not contents)
-data_exchange/inbox/*
-data_exchange/processed/*
-!data_exchange/inbox/.gitkeep
-!data_exchange/processed/.gitkeep
+# Lock files (data exchange)
 
 # Lock files
 *.~lock.*
