@@ -11,6 +11,9 @@
     "credentials_env_var": "ACS_ERP_CREDENTIALS"
   },
   "whatsapp_config": {
+    "phone_number_id_env": "ACS_WHATSAPP_PHONE_NUMBER_ID",
+    "token_env": "ACS_WHATSAPP_TOKEN",
+    "app_secret_env": "ACS_WHATSAPP_APP_SECRET",
     "order_format": "text",
     "languages": ["Tamil", "English", "Tanglish"],
     "group_based_ordering": true

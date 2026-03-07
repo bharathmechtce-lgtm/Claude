@@ -11,6 +11,9 @@
     "credentials_env_var": "CLIENTID_ERP_CREDENTIALS"
   },
   "whatsapp_config": {
+    "phone_number_id_env": "CLIENTID_WHATSAPP_PHONE_NUMBER_ID",
+    "token_env": "CLIENTID_WHATSAPP_TOKEN",
+    "app_secret_env": "CLIENTID_WHATSAPP_APP_SECRET",
     "order_format": "text | voice | image | mixed",
     "languages": ["English"],
     "group_based_ordering": true

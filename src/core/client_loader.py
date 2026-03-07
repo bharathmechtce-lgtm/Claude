@@ -54,6 +54,20 @@ def get_client_chats_path(client_id):
     return CLIENTS_DIR / client_id / "chats"
 
 
+def find_client_by_phone_number_id(phone_number_id):
+    """Find a client config by matching its WhatsApp phone_number_id env var.
+
+    Returns (client_id, config) tuple or (None, None) if not found.
+    """
+    import os
+    for client_id in list_clients():
+        config = load_client(client_id)
+        env_var = config.get("whatsapp_config", {}).get("phone_number_id_env", "")
+        if env_var and os.environ.get(env_var, "") == phone_number_id:
+            return client_id, config
+    return None, None
+
+
 def get_erp_adapter(client_config):
     """Return the appropriate ERP adapter module name based on client config."""
     erp_type = client_config.get("erp_config", {}).get("type", "unknown")

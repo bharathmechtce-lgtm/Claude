@@ -11,6 +11,9 @@
     "credentials_env_var": "TJUK_SAP_CREDENTIALS"
   },
   "whatsapp_config": {
+    "phone_number_id_env": "TJUK_WHATSAPP_PHONE_NUMBER_ID",
+    "token_env": "TJUK_WHATSAPP_TOKEN",
+    "app_secret_env": "TJUK_WHATSAPP_APP_SECRET",
     "order_format": "text",
     "languages": ["English", "Hindi", "Hinglish", "Marathi", "Gujarati"],
     "group_based_ordering": true
