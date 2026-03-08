@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "power-bi": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "powerbi-modeling-mcp"],
+      "env": {}
+    }
+  }
+}
